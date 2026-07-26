@@ -3,6 +3,7 @@ import "./Dashboard.css";
 import Sidebar from "../../components/Sidebar/sidebar";
 import Navbar from "../../components/Navbar/Navbar";
 import StatCard from "../../components/StatCard/StatCard";
+import DashboardCard from "../../components/DashboardCard/DashboardCard";
 
 import {
     FaExclamationTriangle,
@@ -53,6 +54,26 @@ function Dashboard() {
                             icon={<FaUsers />}
                             color="#0ea5e9"
                         />
+
+                    </div>
+
+
+                    <div className="dashboard-content">
+
+                        <h1>Welcome back, Admin</h1>
+
+                        <p>
+                            System Status: Operational.
+                            Monitoring 14 live routes.
+                        </p>
+
+                        <div className="stats-grid">
+
+                            {/* Stat cards */}
+
+                        </div>
+
+                        <DashboardCard />
 
                     </div>
 
