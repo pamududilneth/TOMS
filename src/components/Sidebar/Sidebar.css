@@ -1,9 +1,9 @@
 .sidebar {
     width: 260px;
     height: 100vh;
-    background: var(--panel);
-    border-right: 1px solid var(--border);
-    color: var(--text-primary);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    color: var(--sidebar-text);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -15,27 +15,26 @@
 }
 
 .logo {
-    padding: 32px 28px 26px;
-    border-bottom: 1px solid var(--border);
+    padding: 28px 26px 22px;
+    border-bottom: 1px solid var(--sidebar-border);
 }
 
 .logo h2 {
     font-family: var(--font-display);
-    font-size: 26px;
+    font-size: 20px;
     font-weight: 700;
-    letter-spacing: 0.02em;
-    color: var(--text-primary);
+    color: #fff;
     white-space: nowrap;
 }
 
 .logo span {
     display: block;
-    margin-top: 5px;
-    color: var(--text-muted);
+    margin-top: 4px;
+    color: var(--sidebar-text-muted);
     font-size: 11px;
     font-family: var(--font-mono);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     white-space: nowrap;
 }
 
@@ -43,32 +42,32 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    margin-top: 18px;
+    margin-top: 16px;
     padding: 0 12px;
 }
 
 .menu-item {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 13px 14px;
+    gap: 13px;
+    padding: 12px 14px;
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease;
-    font-size: 14.5px;
+    font-size: 14px;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--sidebar-text);
     position: relative;
     white-space: nowrap;
 }
 
 .menu-item:hover {
-    background: var(--surface-hover);
-    color: var(--text-primary);
+    background: var(--sidebar-hover);
+    color: #fff;
 }
 
 .menu-item.active {
-    background: var(--accent-teal-dim);
+    background: var(--sidebar-active-bg);
     color: var(--accent-teal);
 }
 
@@ -84,22 +83,22 @@
 }
 
 .icon {
-    font-size: 17px;
-    min-width: 17px;
+    font-size: 16px;
+    min-width: 16px;
     display: flex;
 }
 
 .bottom {
-    padding: 16px 12px 22px;
-    border-top: 1px solid var(--border);
+    padding: 14px 12px 20px;
+    border-top: 1px solid var(--sidebar-border);
 }
 
 .bottom .menu-item {
-    color: var(--text-muted);
+    color: var(--sidebar-text-muted);
 }
 
 .bottom .menu-item:hover {
-    color: var(--text-primary);
+    color: #fff;
 }
 
 @media (max-width: 900px) {
@@ -108,27 +107,21 @@
     }
 
     .logo {
-        padding: 26px 0;
+        padding: 22px 0;
         text-align: center;
     }
 
     .logo h2 {
-        font-size: 20px;
+        font-size: 15px;
     }
 
     .logo span {
         display: none;
     }
 
-    .menu,
-    .bottom {
-        padding-left: 0;
-        padding-right: 0;
-    }
-
     .menu-item {
         justify-content: center;
-        padding: 15px 0;
+        padding: 14px 0;
         gap: 0;
     }
 

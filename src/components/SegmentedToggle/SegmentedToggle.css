@@ -1,0 +1,38 @@
+.segmented-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.segmented-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.segmented-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.segmented-toggle button {
+    border: none;
+    background: var(--canvas);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.segmented-toggle button+button {
+    border-left: 1px solid var(--border);
+}
+
+.segmented-toggle button.active {
+    background: var(--text-primary);
+    color: #fff;
+}
