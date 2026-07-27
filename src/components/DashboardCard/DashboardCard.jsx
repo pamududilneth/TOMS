@@ -1,20 +1,33 @@
 import "./DashboardCard.css";
 import dashboardImage from "../../assets/images/dashboard.jpg";
+import { FaChartBar } from "react-icons/fa";
 
 function DashboardCard() {
     return (
-        <div className="dashboard-grid">
+        <div className="feature-grid">
 
             {/* Left Large Card */}
 
-            <div className="main-card">
+            <div className="feature-card">
 
-                <img src={dashboardImage} alt="Dashboard" />
+                <div className="feature-media">
 
-                <div className="main-content">
+                    <img
+                        src={dashboardImage}
+                        alt="Live traffic camera monitoring an unplanned stop"
+                    />
 
-                    <span className="badge">
-                        7 CRITICAL ALERTS
+                    <span className="live-tag">
+                        <span className="pulse-dot" />
+                        LIVE
+                    </span>
+
+                </div>
+
+                <div className="feature-copy">
+
+                    <span className="badge badge-critical">
+                        7 Critical Alerts
                     </span>
 
                     <h2>Unplanned Stop Management</h2>
@@ -25,7 +38,7 @@ function DashboardCard() {
                         proactive intervention.
                     </p>
 
-                    <button>
+                    <button className="btn-primary">
                         Manage Now
                     </button>
 
@@ -37,25 +50,23 @@ function DashboardCard() {
 
             <div className="report-card">
 
-                <div className="report-icon">
+                <div>
 
-                    📊
+                    <div className="report-icon">
+                        <FaChartBar />
+                    </div>
+
+                    <h3>Operational Reports</h3>
+
+                    <p>
+                        Generate automated weekly efficiency audits and
+                        resource utilization summaries.
+                    </p>
 
                 </div>
 
-                <h3>Operational Reports</h3>
-
-                <p>
-
-                    Generate automated weekly efficiency audits and
-                    resource utilization summaries.
-
-                </p>
-
-                <button>
-
+                <button className="btn-secondary">
                     Generate Report
-
                 </button>
 
             </div>

@@ -1,7 +1,8 @@
 import "./Sidebar.css";
 import {
     FaExclamationTriangle,
-    FaClipboardList,
+    FaCarCrash,
+    FaFileAlt,
     FaUsers,
     FaCog,
     FaQuestionCircle,
@@ -18,11 +19,11 @@ function Sidebar() {
         },
         {
             title: "Breakdowns",
-            icon: <FaClipboardList />
+            icon: <FaCarCrash />
         },
         {
             title: "Reports",
-            icon: <FaClipboardList />
+            icon: <FaFileAlt />
         },
         {
             title: "Clients",
@@ -42,7 +43,7 @@ function Sidebar() {
 
                 <h2>TOMS</h2>
 
-                <span>Antigravity</span>
+                <span>Enterprise Resource Controller</span>
 
             </div>
 

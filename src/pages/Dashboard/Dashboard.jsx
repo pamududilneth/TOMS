@@ -1,6 +1,6 @@
 import "./Dashboard.css";
 
-import Sidebar from "../../components/Sidebar/sidebar";
+import Sidebar from "../../components/Sidebar/Sidebar";
 import Navbar from "../../components/Navbar/Navbar";
 import StatCard from "../../components/StatCard/StatCard";
 import DashboardCard from "../../components/DashboardCard/DashboardCard";
@@ -19,18 +19,20 @@ function Dashboard() {
 
             <Sidebar />
 
-            <div className="main-content">
+            <div className="page-content">
 
                 <Navbar />
 
                 <div className="dashboard-content">
 
+                    <div className="eyebrow">
+                        <span className="pulse-dot" />
+                        System Status: Operational
+                    </div>
+
                     <h1>Welcome back, Admin</h1>
 
-                    <p>
-                        System Status: Operational.
-                        Monitoring 14 live routes.
-                    </p>
+                    <p>Monitoring 14 live routes across the network.</p>
 
                     <div className="stats-grid">
 
@@ -38,44 +40,26 @@ function Dashboard() {
                             title="Active Stops"
                             value="124"
                             icon={<FaExclamationTriangle />}
-                            color="#2563eb"
+                            color="#2DD4CE"
                         />
 
                         <StatCard
                             title="Today's Breakdowns"
                             value="3"
                             icon={<FaCarCrash />}
-                            color="#dc2626"
+                            color="#EF4444"
                         />
 
                         <StatCard
                             title="Total Clients"
                             value="892"
                             icon={<FaUsers />}
-                            color="#0ea5e9"
+                            color="#F5A524"
                         />
 
                     </div>
 
-
-                    <div className="dashboard-content">
-
-                        <h1>Welcome back, Admin</h1>
-
-                        <p>
-                            System Status: Operational.
-                            Monitoring 14 live routes.
-                        </p>
-
-                        <div className="stats-grid">
-
-                            {/* Stat cards */}
-
-                        </div>
-
-                        <DashboardCard />
-
-                    </div>
+                    <DashboardCard />
 
                 </div>
 
