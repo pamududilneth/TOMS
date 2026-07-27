@@ -1,0 +1,20 @@
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+    background: var(--canvas);
+}
+
+.page-content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 900px) {
+    .page-content {
+        margin-left: 84px;
+        width: calc(100% - 84px);
+    }
+}

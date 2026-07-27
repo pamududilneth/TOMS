@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 import {
     FiAlertTriangle,
@@ -11,26 +12,30 @@ import {
 
 function Sidebar() {
     const menu = [
-        { title: "Stop Management", icon: <FiAlertTriangle />, active: true },
-        { title: "Breakdowns", icon: <FiClipboard /> },
-        { title: "Reports", icon: <FiFileText /> },
-        { title: "Clients", icon: <FiUsers /> },
-        { title: "Settings", icon: <FiSettings /> }
+        { title: "Stop Management", icon: <FiAlertTriangle />, to: "/stop-management" },
+        { title: "Breakdowns", icon: <FiClipboard />, to: "/breakdowns" },
+        { title: "Reports", icon: <FiFileText />, to: "/reports" },
+        { title: "Clients", icon: <FiUsers />, to: "/clients" },
+        { title: "Settings", icon: <FiSettings />, to: "/settings" }
     ];
 
     return (
         <div className="sidebar">
-            <div className="logo">
+            <NavLink to="/" className="logo">
                 <h2>OpsManager Pro</h2>
                 <span>Enterprise Resource Control</span>
-            </div>
+            </NavLink>
 
             <div className="menu">
-                {menu.map((item, index) => (
-                    <div key={index} className={`menu-item ${item.active ? "active" : ""}`}>
+                {menu.map((item) => (
+                    <NavLink
+                        key={item.to}
+                        to={item.to}
+                        className={({ isActive }) => `menu-item ${isActive ? "active" : ""}`}
+                    >
                         <span className="icon">{item.icon}</span>
                         <span>{item.title}</span>
-                    </div>
+                    </NavLink>
                 ))}
             </div>
 

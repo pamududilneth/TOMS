@@ -61,6 +61,12 @@
     white-space: nowrap;
 }
 
+.logo,
+.menu-item {
+    text-decoration: none;
+    color: inherit;
+}
+
 .menu-item:hover {
     background: var(--sidebar-hover);
     color: #fff;
