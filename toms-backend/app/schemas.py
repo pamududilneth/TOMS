@@ -58,3 +58,26 @@ class DashboardStats(BaseModel):
     active_stops: int
     todays_breakdowns: int
     total_clients: int
+
+
+class ClientCreate(BaseModel):
+    name: str
+
+
+class ClientOut(ClientCreate):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CoordinatorCreate(BaseModel):
+    name: str
+    mobile_number: Optional[str] = None
+
+
+class CoordinatorOut(CoordinatorCreate):
+    id: int
+
+    class Config:
+        from_attributes = True
