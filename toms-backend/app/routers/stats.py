@@ -18,9 +18,10 @@ def dashboard_stats(db: Session = Depends(get_db)):
     )
 
     today_start = datetime.combine(datetime.today(), datetime.min.time())
+
     todays_breakdowns = (
-        db.query(models.Incident)
-        .filter(models.Incident.created_at >= today_start)
+        db.query(models.Breakdown)
+        .filter(models.Breakdown.created_at >= today_start)
         .count()
     )
 
@@ -31,3 +32,47 @@ def dashboard_stats(db: Session = Depends(get_db)):
         todays_breakdowns=todays_breakdowns,
         total_clients=total_clients,
     )
+
+
+@router.get("/recent-activity")
+def recent_activity(limit: int = 6, db: Session = Depends(get_db)):
+    incidents = (
+        db.query(models.Incident)
+        .order_by(models.Incident.id.desc())
+        .limit(limit)
+        .all()
+    )
+    breakdowns = (
+        db.query(models.Breakdown)
+        .order_by(models.Breakdown.id.desc())
+        .limit(limit)
+        .all()
+    )
+
+    items = []
+
+    for i in incidents:
+        items.append({
+            "type": "incident",
+            "id": i.id,
+            "reference": i.request_id,
+            "title": f"Unplanned stop — {i.vehicle_number}",
+            "subtitle": i.driver_name,
+            "status": i.status,
+            "created_at": i.created_at.isoformat() if i.created_at else None,
+        })
+
+    for b in breakdowns:
+        items.append({
+            "type": "breakdown",
+            "id": b.id,
+            "reference": b.job_number,
+            "title": f"{b.incident_type} — {b.vehicle_number}",
+            "subtitle": b.requesting_plant,
+            "status": b.status,
+            "created_at": b.created_at.isoformat() if b.created_at else None,
+        })
+
+    items.sort(key=lambda x: x["created_at"] or "", reverse=True)
+
+    return items[:limit]

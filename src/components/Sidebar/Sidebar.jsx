@@ -1,5 +1,7 @@
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
+import logo from "../../assets/images/OKI DOKI BADGE.png";
+
 import {
     FiAlertTriangle,
     FiClipboard,
@@ -22,7 +24,7 @@ function Sidebar() {
     return (
         <div className="sidebar">
             <NavLink to="/" className="logo">
-                <h2>OpsManager Pro</h2>
+                <img src={logo} alt="Company Logo" className="logo-image" />
                 <span>Enterprise Resource Control</span>
             </NavLink>
 

@@ -7,6 +7,8 @@ from ..database import get_db
 router = APIRouter(prefix="/api", tags=["reference"])
 
 
+# ── Clients ──
+
 @router.get("/clients")
 def list_clients(q: str = "", db: Session = Depends(get_db)):
     query = db.query(models.Client)
@@ -15,22 +17,53 @@ def list_clients(q: str = "", db: Session = Depends(get_db)):
     return [c.name for c in query.limit(20).all()]
 
 
-@router.post("/clients", response_model=schemas.ClientOut)
+@router.get("/clients/full", response_model=list[schemas.ClientFull])
+def list_clients_full(db: Session = Depends(get_db)):
+    return db.query(models.Client).order_by(models.Client.name).all()
+
+
+@router.post("/clients", response_model=schemas.ClientFull)
 def create_client(payload: schemas.ClientCreate, db: Session = Depends(get_db)):
     existing = db.query(models.Client).filter(models.Client.name == payload.name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Client already exists")
 
-    client = models.Client(name=payload.name)
+    client = models.Client(name=payload.name, email=payload.email)
     db.add(client)
     db.commit()
     db.refresh(client)
     return client
 
 
+@router.delete("/clients/{client_id}")
+def delete_client(client_id: int, db: Session = Depends(get_db)):
+    client = db.query(models.Client).filter(models.Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    db.delete(client)
+    db.commit()
+    return {"deleted": True}
+
+
+
+@router.get("/clients/{client_id}", response_model=schemas.ClientDetail)
+def get_client_detail(client_id: int, db: Session = Depends(get_db)):
+    client = db.query(models.Client).filter(models.Client.id == client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    return client
+
+
+# ── Coordinators ──
+
 @router.get("/coordinators")
 def list_coordinators(db: Session = Depends(get_db)):
     return [c.name for c in db.query(models.Coordinator).all()]
+
+
+@router.get("/coordinators/full", response_model=list[schemas.CoordinatorOut])
+def list_coordinators_full(db: Session = Depends(get_db)):
+    return db.query(models.Coordinator).order_by(models.Coordinator.name).all()
 
 
 @router.post("/coordinators", response_model=schemas.CoordinatorOut)
@@ -44,3 +77,13 @@ def create_coordinator(payload: schemas.CoordinatorCreate, db: Session = Depends
     db.commit()
     db.refresh(coordinator)
     return coordinator
+
+
+@router.delete("/coordinators/{coordinator_id}")
+def delete_coordinator(coordinator_id: int, db: Session = Depends(get_db)):
+    coordinator = db.query(models.Coordinator).filter(models.Coordinator.id == coordinator_id).first()
+    if not coordinator:
+        raise HTTPException(status_code=404, detail="Coordinator not found")
+    db.delete(coordinator)
+    db.commit()
+    return {"deleted": True}

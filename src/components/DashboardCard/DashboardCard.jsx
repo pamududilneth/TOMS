@@ -1,31 +1,28 @@
+import { useNavigate } from "react-router-dom";
 import "./DashboardCard.css";
 import dashboardImage from "../../assets/images/dashboard.jpg";
 import { FaChartBar } from "react-icons/fa";
 
 function DashboardCard() {
+    const navigate = useNavigate();
+
     return (
         <div className="feature-grid">
-
-            {/* Left Large Card */}
 
             <div className="feature-card">
 
                 <div className="feature-media">
-
                     <img
                         src={dashboardImage}
                         alt="Live traffic camera monitoring an unplanned stop"
                     />
-
                     <span className="live-tag">
                         <span className="pulse-dot" />
                         LIVE
                     </span>
-
                 </div>
 
                 <div className="feature-copy">
-
                     <span className="badge badge-critical">
                         7 Critical Alerts
                     </span>
@@ -38,20 +35,16 @@ function DashboardCard() {
                         proactive intervention.
                     </p>
 
-                    <button className="btn-primary">
+                    <button className="btn-primary" onClick={() => navigate("/stop-management")}>
                         Manage Now
                     </button>
-
                 </div>
 
             </div>
 
-            {/* Right Card */}
-
             <div className="report-card">
 
                 <div>
-
                     <div className="report-icon">
                         <FaChartBar />
                     </div>
@@ -62,13 +55,11 @@ function DashboardCard() {
                         Generate automated weekly efficiency audits and
                         resource utilization summaries.
                     </p>
-
                 </div>
 
-                <button className="btn-secondary">
+                <button className="btn-secondary" onClick={() => navigate("/reports")}>
                     Generate Report
                 </button>
-
             </div>
 
         </div>

@@ -63,6 +63,21 @@ class DashboardStats(BaseModel):
 class ClientCreate(BaseModel):
     name: str
 
+class ClientFull(BaseModel):
+    id: int
+    name: str
+    email: Optional[str] = None
+    first_shared_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+
+class ClientDetail(ClientFull):
+    incidents: list[IncidentOut] = []
+
+
 
 class ClientOut(ClientCreate):
     id: int
@@ -78,6 +93,31 @@ class CoordinatorCreate(BaseModel):
 
 class CoordinatorOut(CoordinatorCreate):
     id: int
+
+    class Config:
+        from_attributes = True
+
+
+class BreakdownBase(BaseModel):
+    vehicle_number: str
+    requesting_plant: Optional[str] = None
+    pickup_location: Optional[str] = None
+    via_location: Optional[str] = None
+    delivery_location: Optional[str] = None
+    incident_type: str = "Breakdown"
+    incident_datetime: Optional[str] = None
+    location: Optional[str] = None
+    reason: Optional[str] = None
+    action_taken: Optional[str] = None
+    priority: str = "High Intervention"
+    status: str = "submitted"
+
+
+class BreakdownOut(BreakdownBase):
+    id: int
+    job_number: str
+    image_filename: Optional[str] = None
+    created_at: datetime
 
     class Config:
         from_attributes = True

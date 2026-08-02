@@ -1,4 +1,4 @@
-.reports-layout {
+.clients-layout {
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: 0;
@@ -6,14 +6,14 @@
     min-height: 0;
 }
 
-.reports-list-panel {
+.clients-list-panel {
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     background: var(--surface);
 }
 
-.reports-list-header {
+.clients-list-header {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -21,7 +21,7 @@
     border-bottom: 1px solid var(--border);
 }
 
-.reports-search {
+.clients-search {
     flex: 1;
     display: flex;
     align-items: center;
@@ -33,7 +33,7 @@
     color: var(--text-muted);
 }
 
-.reports-search input {
+.clients-search input {
     border: none;
     background: transparent;
     outline: none;
@@ -42,7 +42,7 @@
     color: var(--text-primary);
 }
 
-.reports-refresh {
+.clients-refresh {
     width: 36px;
     height: 36px;
     border-radius: 8px;
@@ -56,76 +56,27 @@
     flex-shrink: 0;
 }
 
-.reports-refresh:hover {
+.clients-refresh:hover {
     color: var(--accent-teal);
     border-color: var(--accent-teal);
 }
 
-.reports-list-body {
+.clients-list-body {
     flex: 1;
     overflow-y: auto;
 }
 
-.reports-list-msg {
-    padding: 20px 16px;
-    font-size: 13px;
-    color: var(--text-muted);
-}
-
-.reports-toolbar-spacer {
-    flex: 1;
-}
-
-.reports-list-msg.error {
-    color: var(--icon-red);
-}
-
-.reports-detail-panel {
+.clients-detail-panel {
     padding: 28px;
     overflow-y: auto;
 }
 
-.reports-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-}
-
-.reports-export-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--text-primary);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.reports-export-btn:hover {
-    border-color: var(--accent-teal);
-    color: var(--accent-teal);
-}
-
-.reports-copy-status {
-    font-size: 12.5px;
-    color: var(--accent-teal);
-    font-weight: 500;
-}
-
 @media (max-width: 900px) {
-    .reports-layout {
+    .clients-layout {
         grid-template-columns: 1fr;
     }
 
-    .reports-list-panel {
+    .clients-list-panel {
         border-right: none;
         border-bottom: 1px solid var(--border);
         max-height: 280px;
