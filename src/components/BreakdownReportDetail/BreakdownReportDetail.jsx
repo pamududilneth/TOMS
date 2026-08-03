@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./BreakdownReportDetail.css";
 import ReportField from "../ReportField/ReportField";
 import { buildSingleBreakdownTableHTML } from "../../utils/reportTable";
+import { useNavigate } from "react-router-dom";
 import {
     FiPrinter,
     FiDownload,
@@ -10,8 +11,11 @@ import {
     FiNavigation,
     FiAlertTriangle,
     FiCheckSquare,
-    FiTruck
+    FiTruck,
+    FiEdit2,
 } from "react-icons/fi";
+
+
 
 function formatDateTime(value) {
     if (!value) return "—";
@@ -22,6 +26,7 @@ function formatDateTime(value) {
 }
 
 function BreakdownReportDetail({ breakdown }) {
+    const navigate = useNavigate();
     const [copyStatus, setCopyStatus] = useState("");
 
     if (!breakdown) {
@@ -84,6 +89,15 @@ function BreakdownReportDetail({ breakdown }) {
                     <span className={`status-badge status-${breakdown.status}`}>
                         {breakdown.status}
                     </span>
+
+                    <button
+                        type="button"
+                        className="print-btn"
+                        onClick={() => navigate(`/breakdowns/edit/${breakdown.id}`)}
+                    >
+                        <FiEdit2 />
+                        Edit
+                    </button>
                     <button type="button" className="print-btn" onClick={handleDownloadHtml}>
                         <FiDownload />
                         Download as HTML

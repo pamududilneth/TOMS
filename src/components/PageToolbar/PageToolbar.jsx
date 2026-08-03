@@ -1,6 +1,15 @@
 import "./PageToolbar.css";
 
-function PageToolbar({ crumbs = [], subtitle, onDiscard, onSubmit, submitting = false }) {
+function PageToolbar({
+    crumbs = [],
+    subtitle,
+    onDiscard,
+    onSubmit,
+    submitting = false,
+    discardLabel = "Discard Draft",
+    submitLabel = "Submit Incident Report",
+    submittingLabel = "Submitting...",
+}) {
     return (
         <div className="page-toolbar">
             <div>
@@ -17,10 +26,10 @@ function PageToolbar({ crumbs = [], subtitle, onDiscard, onSubmit, submitting = 
 
             <div className="toolbar-actions">
                 <button type="button" className="btn-outline" onClick={onDiscard} disabled={submitting}>
-                    Discard Draft
+                    {discardLabel}
                 </button>
                 <button type="button" className="btn-dark" onClick={onSubmit} disabled={submitting}>
-                    {submitting ? "Submitting..." : "Submit Incident Report"}
+                    {submitting ? submittingLabel : submitLabel}
                 </button>
             </div>
         </div>

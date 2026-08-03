@@ -2,6 +2,8 @@ import { useState } from "react";
 import "./ReportDetail.css";
 import ReportField from "../ReportField/ReportField";
 import { buildSingleIncidentTableHTML } from "../../utils/reportTable";
+import { useNavigate } from "react-router-dom";
+
 import {
     FiPrinter,
     FiDownload,
@@ -10,8 +12,11 @@ import {
     FiUser,
     FiMapPin,
     FiFileText,
-    FiCheckCircle
+    FiCheckCircle,
+    FiEdit2,
 } from "react-icons/fi";
+
+
 
 function formatDateTime(value) {
     if (!value) return "—";
@@ -23,6 +28,7 @@ function formatDateTime(value) {
 }
 
 function ReportDetail({ incident }) {
+    const navigate = useNavigate();
     const [copyStatus, setCopyStatus] = useState("");
 
     if (!incident) {
@@ -85,6 +91,14 @@ function ReportDetail({ incident }) {
                     <span className={`status-badge status-${incident.status}`}>
                         {incident.status}
                     </span>
+                    <button
+                        type="button"
+                        className="print-btn"
+                        onClick={() => navigate(`/stop-management/edit/${incident.id}`)}
+                    >
+                        <FiEdit2 />
+                        Edit
+                    </button>
                     <button type="button" className="print-btn" onClick={handleDownloadHtml}>
                         <FiDownload />
                         Download as HTML

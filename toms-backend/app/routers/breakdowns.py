@@ -113,7 +113,7 @@ def create_breakdown(
     return breakdown
 
 
-# ── Dynamic route stays LAST ──
+# ── Dynamic routes stay LAST ──
 
 @router.get("/{breakdown_id}", response_model=schemas.BreakdownOut)
 def get_breakdown(breakdown_id: int, db: Session = Depends(get_db)):
@@ -121,3 +121,54 @@ def get_breakdown(breakdown_id: int, db: Session = Depends(get_db)):
     if not breakdown:
         raise HTTPException(status_code=404, detail="Breakdown not found")
     return breakdown
+
+
+@router.patch("/{breakdown_id}", response_model=schemas.BreakdownOut)
+def update_breakdown(
+    breakdown_id: int,
+    payload: schemas.BreakdownUpdate,
+    db: Session = Depends(get_db),
+):
+    breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
+    if not breakdown:
+        raise HTTPException(status_code=404, detail="Breakdown not found")
+
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(breakdown, field, value)
+
+    db.commit()
+    db.refresh(breakdown)
+    return breakdown
+
+
+@router.post("/{breakdown_id}/image", response_model=schemas.BreakdownOut)
+def replace_breakdown_image(
+    breakdown_id: int,
+    image: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
+    if not breakdown:
+        raise HTTPException(status_code=404, detail="Breakdown not found")
+
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    ext = os.path.splitext(image.filename)[1]
+    image_filename = f"{breakdown.job_number}{ext}"
+    dest_path = os.path.join(UPLOAD_DIR, image_filename)
+    with open(dest_path, "wb") as f:
+        shutil.copyfileobj(image.file, f)
+
+    breakdown.image_filename = image_filename
+    db.commit()
+    db.refresh(breakdown)
+    return breakdown
+
+
+@router.delete("/{breakdown_id}")
+def delete_breakdown(breakdown_id: int, db: Session = Depends(get_db)):
+    breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
+    if not breakdown:
+        raise HTTPException(status_code=404, detail="Breakdown not found")
+    db.delete(breakdown)
+    db.commit()
+    return {"deleted": True}

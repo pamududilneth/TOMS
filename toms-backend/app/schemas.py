@@ -112,6 +112,20 @@ class BreakdownBase(BaseModel):
     priority: str = "High Intervention"
     status: str = "submitted"
 
+class BreakdownUpdate(BaseModel):
+    vehicle_number: Optional[str] = None
+    requesting_plant: Optional[str] = None
+    pickup_location: Optional[str] = None
+    via_location: Optional[str] = None
+    delivery_location: Optional[str] = None
+    incident_type: Optional[str] = None
+    incident_datetime: Optional[str] = None
+    location: Optional[str] = None
+    reason: Optional[str] = None
+    action_taken: Optional[str] = None
+    priority: Optional[str] = None
+    status: Optional[str] = None
+
 
 class BreakdownOut(BreakdownBase):
     id: int
@@ -121,3 +135,37 @@ class BreakdownOut(BreakdownBase):
 
     class Config:
         from_attributes = True
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class UserOut(BaseModel):
+    id: int
+    username: str
+    full_name: Optional[str] = None
+    role: str
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    full_name: Optional[str] = None
+    role: str = "staff"
+
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut

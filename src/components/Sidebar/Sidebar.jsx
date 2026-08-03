@@ -1,7 +1,7 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Sidebar.css";
-import logo from "../../assets/images/OKI DOKI BADGE.png";
-
+import { useAuth } from "../../context/AuthContext";
+import companyLogo from "../../assets/images/oki-doki-logo.png";
 import {
     FiAlertTriangle,
     FiClipboard,
@@ -13,19 +13,29 @@ import {
 } from "react-icons/fi";
 
 function Sidebar() {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
     const menu = [
         { title: "Stop Management", icon: <FiAlertTriangle />, to: "/stop-management" },
         { title: "Breakdowns", icon: <FiClipboard />, to: "/breakdowns" },
         { title: "Reports", icon: <FiFileText />, to: "/reports" },
         { title: "Clients", icon: <FiUsers />, to: "/clients" },
-        { title: "Settings", icon: <FiSettings />, to: "/settings" }
     ];
+
+    if (user?.role === "admin") {
+        menu.push({ title: "Settings", icon: <FiSettings />, to: "/settings" });
+    }
+
+    function handleLogout() {
+        logout();
+        navigate("/login");
+    }
 
     return (
         <div className="sidebar">
             <NavLink to="/" className="logo">
-                <img src={logo} alt="Company Logo" className="logo-image" />
-                <span>Enterprise Resource Control</span>
+                <img src={companyLogo} alt="Company Logo" className="logo-image" />
             </NavLink>
 
             <div className="menu">
@@ -42,11 +52,17 @@ function Sidebar() {
             </div>
 
             <div className="bottom">
+                {user && (
+                    <div className="sidebar-user">
+                        <span className="sidebar-user-name">{user.full_name || user.username}</span>
+                        <span className="sidebar-user-role">{user.role}</span>
+                    </div>
+                )}
                 <div className="menu-item">
                     <FiHelpCircle />
                     <span>Help Center</span>
                 </div>
-                <div className="menu-item">
+                <div className="menu-item" onClick={handleLogout}>
                     <FiLogOut />
                     <span>Log Out</span>
                 </div>

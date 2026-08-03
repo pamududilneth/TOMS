@@ -69,6 +69,16 @@
     color: var(--accent-teal);
 }
 
+.status-in_progress {
+    background: var(--icon-blue-bg);
+    color: var(--icon-blue);
+}
+
+.status-resolved {
+    background: var(--accent-teal-dim);
+    color: var(--accent-teal);
+}
+
 .status-draft {
     background: var(--icon-amber-bg, rgba(217, 119, 6, 0.12));
     color: var(--accent-amber);

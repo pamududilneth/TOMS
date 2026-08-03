@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./Settings.css";
 
+import UsersPanel from "../../components/UsersPanel/UsersPanel";
 import Topbar from "../../components/Topbar/Topbar";
 import SettingsTable from "../../components/SettingsTable/SettingsTable";
 import { api } from "../../lib/api";
@@ -54,6 +55,7 @@ function Settings() {
 
             <div className="settings-page">
 
+                <UsersPanel />
                 <SettingsTable
                     title="Coordinators"
                     columns={[
