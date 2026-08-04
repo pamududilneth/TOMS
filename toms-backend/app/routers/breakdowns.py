@@ -19,8 +19,10 @@ UPLOAD_DIR = os.path.join(
 
 def generate_job_number(db: Session) -> str:
     year = datetime.now().year
-    count = db.query(models.Breakdown).count() + 1
-    return f"JOB-{year}-{count:04d}"
+    # Look at the last inserted ID instead of the total count
+    last_breakdown = db.query(models.Breakdown).order_by(models.Breakdown.id.desc()).first()
+    next_count = (last_breakdown.id + 1) if last_breakdown else 1
+    return f"JOB-{year}-{next_count:04d}"
 
 
 # ── Static/literal routes must come BEFORE the dynamic /{breakdown_id} route ──

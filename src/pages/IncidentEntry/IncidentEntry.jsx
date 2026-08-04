@@ -7,6 +7,7 @@ import FormSection from "../../components/FormSection/FormSection";
 import FormField from "../../components/FormField/FormField";
 import SegmentedToggle from "../../components/SegmentedToggle/SegmentedToggle";
 import ToggleSwitch from "../../components/ToggleSwitch/ToggleSwitch";
+import ClientShareSelect from "../../components/ClientShareSelect/ClientShareSelect";
 import { api } from "../../lib/api";
 
 import {
@@ -15,8 +16,7 @@ import {
     FiMapPin,
     FiFileText,
     FiCheckCircle,
-    FiClock,
-    FiGrid
+    FiClock
 } from "react-icons/fi";
 
 const emptyForm = {
@@ -34,7 +34,6 @@ const emptyForm = {
     driver_feedback: "",
     vehicle_parked: false,
     approver: "",
-    client_name: "",
 };
 
 function IncidentEntry() {
@@ -44,29 +43,32 @@ function IncidentEntry() {
     const [error, setError] = useState(null);
 
     const [coordinators, setCoordinators] = useState([]);
-    const [clientSuggestions, setClientSuggestions] = useState([]);
+    const [clients, setClients] = useState([]);
+    const [selectedClientIds, setSelectedClientIds] = useState([]);
 
     useEffect(() => {
+        refreshRequestId();
+        refreshCoordinators();
+        refreshClients();
+    }, []);
+
+    function refreshRequestId() {
         api.getNextRequestId()
             .then((data) => setPreviewId(data.request_id))
             .catch(() => setPreviewId("Unavailable"));
+    }
 
+    function refreshCoordinators() {
         api.listCoordinators()
             .then(setCoordinators)
             .catch(() => setCoordinators([]));
-    }, []);
+    }
 
-    useEffect(() => {
-        if (form.client_name.trim().length < 2) return;
-
-        const timeout = setTimeout(() => {
-            api.listClients(form.client_name)
-                .then(setClientSuggestions)
-                .catch(() => { });
-        }, 250);
-
-        return () => clearTimeout(timeout);
-    }, [form.client_name]);
+    function refreshClients() {
+        api.listClientsFull()
+            .then(setClients)
+            .catch(() => setClients([]));
+    }
 
     function updateField(name, value) {
         setForm((prev) => ({ ...prev, [name]: value }));
@@ -76,10 +78,11 @@ function IncidentEntry() {
         setSubmitting(true);
         setError(null);
         try {
-            await api.createIncident(form);
+            await api.createIncident({ ...form, client_ids: selectedClientIds });
             setForm(emptyForm);
-            const next = await api.getNextRequestId();
-            setPreviewId(next.request_id);
+            setSelectedClientIds([]);
+            refreshRequestId();
+            refreshClients(); // picks up updated "shared" status/links after this submission
         } catch (err) {
             setError(err.message);
         } finally {
@@ -89,6 +92,7 @@ function IncidentEntry() {
 
     function handleDiscard() {
         setForm(emptyForm);
+        setSelectedClientIds([]);
         setError(null);
     }
 
@@ -237,19 +241,11 @@ function IncidentEntry() {
                             value={form.approver}
                             onChange={(e) => updateField("approver", e.target.value)}
                         />
-                        <FormField
-                            label="Select Client for Report"
-                            icon={<FiGrid />}
-                            placeholder="Search Client..."
-                            value={form.client_name}
-                            onChange={(e) => updateField("client_name", e.target.value)}
-                            list="client-options"
+                        <ClientShareSelect
+                            clients={clients}
+                            selectedIds={selectedClientIds}
+                            onChange={setSelectedClientIds}
                         />
-                        <datalist id="client-options">
-                            {clientSuggestions.map((name) => (
-                                <option key={name} value={name} />
-                            ))}
-                        </datalist>
                     </FormSection>
 
                     <div className="guideline-box">
@@ -259,8 +255,8 @@ function IncidentEntry() {
                         </div>
                         <ul>
                             <li>All fields marked * are mandatory</li>
-                            <li>Reports generate automatically after submission</li>
-                            <li>Ensure location details are accurate</li>
+                            <li>Each selected customer gets a live-updating Google Sheet</li>
+                            <li>Customers are emailed the link only the first time</li>
                         </ul>
                     </div>
 

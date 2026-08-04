@@ -15,8 +15,10 @@ router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
 def generate_request_id(db: Session) -> str:
     year = datetime.now().year
-    count = db.query(models.Incident).count() + 1
-    return f"REQ-{year}-{count:05d}"
+    # Look at the last inserted ID instead of the total count
+    last_incident = db.query(models.Incident).order_by(models.Incident.id.desc()).first()
+    next_count = (last_incident.id + 1) if last_incident else 1
+    return f"REQ-{year}-{next_count:05d}"
 
 
 # ── Static/literal routes must come BEFORE the dynamic /{incident_id} route ──

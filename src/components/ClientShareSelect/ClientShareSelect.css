@@ -1,0 +1,72 @@
+.client-share-select {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.client-share-select>label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.client-share-list {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: var(--canvas);
+}
+
+.client-share-empty {
+    padding: 12px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+.client-share-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--text-primary);
+}
+
+.client-share-item:last-child {
+    border-bottom: none;
+}
+
+.client-share-item:hover {
+    background: var(--surface-hover);
+}
+
+.client-share-name {
+    flex: 1;
+}
+
+.client-share-badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.client-share-badge.shared {
+    background: var(--accent-teal-dim);
+    color: var(--accent-teal);
+}
+
+.client-share-badge.pending {
+    background: var(--icon-blue-bg);
+    color: var(--icon-blue);
+}
+
+.client-share-badge.no-email {
+    background: var(--icon-red-bg);
+    color: var(--icon-red);
+}

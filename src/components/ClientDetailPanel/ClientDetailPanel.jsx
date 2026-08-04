@@ -42,11 +42,15 @@ function ClientDetailPanel({ client, loading, error }) {
                 </div>
             </div>
 
+
             <div className="client-detail-status">
                 <FiCheckCircle />
                 {client.first_shared_at ? (
                     <span>
-                        First shared on <strong>{formatDateTime(client.first_shared_at)}</strong> — reports have been kept up to date since.
+                        First shared on <strong>{formatDateTime(client.first_shared_at)}</strong> —{" "}
+                        <a href={client.share_link} target="_blank" rel="noreferrer">
+                            view live sheet
+                        </a>
                     </span>
                 ) : (
                     <span>Not shared yet — this client hasn't been sent a report from Stop Management.</span>

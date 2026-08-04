@@ -23,7 +23,7 @@ class IncidentBase(BaseModel):
 
 
 class IncidentCreate(IncidentBase):
-    pass
+    client_ids: list[int] = []
 
 
 class IncidentUpdate(BaseModel):
@@ -62,12 +62,14 @@ class DashboardStats(BaseModel):
 
 class ClientCreate(BaseModel):
     name: str
+    email: Optional[str] = None
 
 class ClientFull(BaseModel):
     id: int
     name: str
     email: Optional[str] = None
     first_shared_at: Optional[datetime] = None
+    share_link: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -1,6 +1,14 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, func
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, Table, ForeignKey
+from sqlalchemy.orm import relationship
 from .database import Base
 
+# 1. Define the association table FIRST
+incident_clients = Table(
+    "incident_clients",
+    Base.metadata,
+    Column("incident_id", Integer, ForeignKey("incidents.id"), primary_key=True),
+    Column("client_id", Integer, ForeignKey("clients.id"), primary_key=True)
+)
 
 class Incident(Base):
     __tablename__ = "incidents"
@@ -29,14 +37,24 @@ class Incident(Base):
 
     status = Column(String, default="submitted")  # draft | submitted
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
+    
+    # 2. Add the reverse relationship so Client can back_populate
+    shared_clients = relationship(
+        "Client", secondary=incident_clients, back_populates="incidents"
+    )
 
 class Client(Base):
     __tablename__ = "clients"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
+    email = Column(String, nullable=True)
+    first_shared_at = Column(DateTime(timezone=True), nullable=True)
+    share_link = Column(String, nullable=True)
 
+    incidents = relationship(
+        "Incident", secondary=incident_clients, back_populates="shared_clients"
+    )
 
 class Coordinator(Base):
     __tablename__ = "coordinators"
@@ -69,7 +87,6 @@ class Breakdown(Base):
 
     status = Column(String, default="submitted")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
 
 class User(Base):
     __tablename__ = "users"
