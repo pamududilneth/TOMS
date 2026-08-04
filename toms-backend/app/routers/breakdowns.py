@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
 from ..utils.breakdown_excel_export import append_breakdown_row, EXCEL_PATH
+from ..utils.auth import require_admin
 
 router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
 
@@ -165,7 +166,11 @@ def replace_breakdown_image(
 
 
 @router.delete("/{breakdown_id}")
-def delete_breakdown(breakdown_id: int, db: Session = Depends(get_db)):
+def delete_breakdown(
+    breakdown_id: int,
+    db: Session = Depends(get_db),
+    _admin=Depends(require_admin),
+):
     breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
     if not breakdown:
         raise HTTPException(status_code=404, detail="Breakdown not found")

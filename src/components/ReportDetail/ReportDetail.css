@@ -145,6 +145,15 @@
     margin-bottom: 20px;
 }
 
+.btn-danger {
+    border-color: var(--icon-red);
+    color: var(--icon-red);
+}
+
+.btn-danger:hover {
+    background: var(--icon-red-bg);
+}
+
 @media (max-width: 700px) {
     .report-grid {
         grid-template-columns: 1fr;

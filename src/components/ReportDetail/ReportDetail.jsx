@@ -3,18 +3,10 @@ import "./ReportDetail.css";
 import ReportField from "../ReportField/ReportField";
 import { buildSingleIncidentTableHTML } from "../../utils/reportTable";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { api } from "../../lib/api";
 
-import {
-    FiPrinter,
-    FiDownload,
-    FiCopy,
-    FiAlertTriangle,
-    FiUser,
-    FiMapPin,
-    FiFileText,
-    FiCheckCircle,
-    FiEdit2,
-} from "react-icons/fi";
+import { FiPrinter, FiDownload, FiCopy, FiEdit2, FiTrash2, FiAlertTriangle, FiUser, FiMapPin, FiFileText, FiCheckCircle } from "react-icons/fi";
 
 
 
@@ -27,10 +19,10 @@ function formatDateTime(value) {
     });
 }
 
-function ReportDetail({ incident }) {
-    const navigate = useNavigate();
+function ReportDetail({ incident, onDeleted }) {
     const [copyStatus, setCopyStatus] = useState("");
-
+    const navigate = useNavigate();
+    const { user } = useAuth();
     if (!incident) {
         return (
             <div className="report-detail-empty">
@@ -75,6 +67,20 @@ function ReportDetail({ incident }) {
         setTimeout(() => setCopyStatus(""), 3500);
     }
 
+    async function handleDelete() {
+        const confirmed = window.confirm(
+            `Delete incident ${incident.request_id}? This cannot be undone.`
+        );
+        if (!confirmed) return;
+
+        try {
+            await api.deleteIncident(incident.id);
+            onDeleted?.();
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+
     return (
         <div className="report-detail" id="report-print-area">
 
@@ -99,6 +105,12 @@ function ReportDetail({ incident }) {
                         <FiEdit2 />
                         Edit
                     </button>
+                    {user?.role === "admin" && (
+                        <button type="button" className="print-btn btn-danger" onClick={handleDelete}>
+                            <FiTrash2 />
+                            Delete
+                        </button>
+                    )}
                     <button type="button" className="print-btn" onClick={handleDownloadHtml}>
                         <FiDownload />
                         Download as HTML

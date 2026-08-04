@@ -1,12 +1,14 @@
+import os
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from datetime import datetime
-import os
 
 from .. import models, schemas
 from ..database import get_db
 from ..utils.excel_export import append_incident_row, EXCEL_PATH
+from ..utils.client_share import share_incident_with_client
+from ..utils.auth import require_admin
 
 router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
@@ -16,6 +18,8 @@ def generate_request_id(db: Session) -> str:
     count = db.query(models.Incident).count() + 1
     return f"REQ-{year}-{count:05d}"
 
+
+# ── Static/literal routes must come BEFORE the dynamic /{incident_id} route ──
 
 @router.get("/", response_model=list[schemas.IncidentOut])
 def list_incidents(db: Session = Depends(get_db)):
@@ -37,23 +41,20 @@ def export_excel():
         filename="incidents.xlsx",
     )
 
+
 @router.get("/debug/excel-path")
 def debug_excel_path():
     return {"path": EXCEL_PATH, "exists": os.path.exists(EXCEL_PATH)}
 
-@router.get("/{incident_id}", response_model=schemas.IncidentOut)
-def get_incident(incident_id: int, db: Session = Depends(get_db)):
-    incident = db.query(models.Incident).filter(models.Incident.id == incident_id).first()
-    if not incident:
-        raise HTTPException(status_code=404, detail="Incident not found")
-    return incident
-
 
 @router.post("/", response_model=schemas.IncidentOut)
 def create_incident(payload: schemas.IncidentCreate, db: Session = Depends(get_db)):
+    data = payload.model_dump()
+    client_ids = data.pop("client_ids", [])
+
     incident = models.Incident(
         request_id=generate_request_id(db),
-        **payload.model_dump(),
+        **data,
     )
     db.add(incident)
     db.commit()
@@ -64,6 +65,27 @@ def create_incident(payload: schemas.IncidentCreate, db: Session = Depends(get_d
     except RuntimeError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
 
+    if client_ids:
+        clients = db.query(models.Client).filter(models.Client.id.in_(client_ids)).all()
+        incident.shared_clients = clients
+        db.commit()
+
+        for client in clients:
+            try:
+                share_incident_with_client(client, incident, db)
+            except RuntimeError as exc:
+                raise HTTPException(status_code=409, detail=str(exc))
+
+    return incident
+
+
+# ── Dynamic routes stay LAST ──
+
+@router.get("/{incident_id}", response_model=schemas.IncidentOut)
+def get_incident(incident_id: int, db: Session = Depends(get_db)):
+    incident = db.query(models.Incident).filter(models.Incident.id == incident_id).first()
+    if not incident:
+        raise HTTPException(status_code=404, detail="Incident not found")
     return incident
 
 
@@ -82,7 +104,11 @@ def update_incident(incident_id: int, payload: schemas.IncidentUpdate, db: Sessi
 
 
 @router.delete("/{incident_id}")
-def delete_incident(incident_id: int, db: Session = Depends(get_db)):
+def delete_incident(
+    incident_id: int,
+    db: Session = Depends(get_db),
+    _admin=Depends(require_admin),
+):
     incident = db.query(models.Incident).filter(models.Incident.id == incident_id).first()
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")

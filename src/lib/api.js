@@ -98,4 +98,6 @@ export const api = {
     getBreakdown: (id) => request(`/breakdowns/${id}`),
     updateBreakdown: (id, data) => request(`/breakdowns/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     replaceBreakdownImage: (id, formData) => requestForm(`/breakdowns/${id}/image`, formData),
+    deleteIncident: (id) => request(`/incidents/${id}`, { method: "DELETE" }),
+    deleteBreakdown: (id) => request(`/breakdowns/${id}`, { method: "DELETE" }),
 };
