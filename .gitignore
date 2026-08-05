@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 
 google-service-account.json
+google-oauth-client.json

@@ -1,16 +1,6 @@
-import os
 import gspread
-from google.oauth2.service_account import Credentials
-from dotenv import load_dotenv
 
-load_dotenv()
-
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive",
-]
-
-SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "google-service-account.json")
+from .google_oauth import get_credentials
 
 _client = None
 
@@ -18,12 +8,7 @@ _client = None
 def _get_client():
     global _client
     if _client is None:
-        if not os.path.exists(SERVICE_ACCOUNT_FILE):
-            raise RuntimeError(
-                f"Google service account file not found at '{SERVICE_ACCOUNT_FILE}'. "
-                "Check GOOGLE_SERVICE_ACCOUNT_FILE in toms-backend/.env"
-            )
-        creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        creds = get_credentials()
         _client = gspread.authorize(creds)
     return _client
 
@@ -43,8 +28,9 @@ HEADERS = [
 def get_or_create_client_sheet(sheet_title: str, client_email: str | None):
     """
     Returns (spreadsheet, share_url). Creates the sheet on first call for this
-    title, shares it with the client's email if provided, and returns the
-    existing one on later calls (found by exact title match).
+    title, owned by your real Google account (so it uses your real storage
+    quota, not a service account's zero-quota Drive). Shares it with the
+    client's email if provided, and returns the existing one on later calls.
     """
     gc = _get_client()
 
@@ -59,7 +45,7 @@ def get_or_create_client_sheet(sheet_title: str, client_email: str | None):
         created = True
 
     if created and client_email:
-        sh.share(client_email, perm_type="user", role="reader", notify=False)
+        sh.share(client_email, perm_type="user", role="reader", notify=True)
 
     return sh, sh.url
 
