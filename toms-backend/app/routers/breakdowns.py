@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
-from ..utils.breakdown_excel_export import append_breakdown_row, EXCEL_PATH
+from ..utils.google_sheets_client import append_breakdown_row  # Import the new Google Sheets function
 from ..utils.auth import require_admin
 
 router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
@@ -16,7 +16,6 @@ UPLOAD_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "breakdowns"
 )
 
-
 def generate_job_number(db: Session) -> str:
     year = datetime.now().year
     # Look at the last inserted ID instead of the total count
@@ -24,29 +23,11 @@ def generate_job_number(db: Session) -> str:
     next_count = (last_breakdown.id + 1) if last_breakdown else 1
     return f"JOB-{year}-{next_count:04d}"
 
-
 # ── Static/literal routes must come BEFORE the dynamic /{breakdown_id} route ──
 
 @router.get("/next-id")
 def next_job_number(db: Session = Depends(get_db)):
     return {"job_number": generate_job_number(db)}
-
-
-@router.get("/export/excel")
-def export_excel():
-    if not os.path.exists(EXCEL_PATH):
-        raise HTTPException(status_code=404, detail="No breakdowns recorded yet")
-    return FileResponse(
-        EXCEL_PATH,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        filename="breakdowns.xlsx",
-    )
-
-
-@router.get("/debug/excel-path")
-def debug_excel_path():
-    return {"path": EXCEL_PATH, "exists": os.path.exists(EXCEL_PATH)}
-
 
 @router.get("/uploads/{filename}")
 def get_uploaded_image(filename: str):
@@ -55,11 +36,9 @@ def get_uploaded_image(filename: str):
         raise HTTPException(status_code=404, detail="Image not found")
     return FileResponse(path)
 
-
 @router.get("/", response_model=list[schemas.BreakdownOut])
 def list_breakdowns(db: Session = Depends(get_db)):
     return db.query(models.Breakdown).order_by(models.Breakdown.id.desc()).all()
-
 
 @router.post("/", response_model=schemas.BreakdownOut)
 def create_breakdown(
@@ -108,13 +87,29 @@ def create_breakdown(
     db.commit()
     db.refresh(breakdown)
 
+    # Convert the breakdown database object into a simple list for Google Sheets
+    row_data = [
+        breakdown.job_number,
+        breakdown.vehicle_number,
+        breakdown.requesting_plant,
+        breakdown.pickup_location,
+        breakdown.via_location,
+        breakdown.delivery_location,
+        breakdown.incident_type,
+        breakdown.incident_datetime,
+        breakdown.location,
+        breakdown.reason,
+        breakdown.action_taken,
+        breakdown.priority,
+        breakdown.status
+    ]
+
     try:
-        append_breakdown_row(breakdown)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=409, detail=str(exc))
+        append_breakdown_row(row_data)
+    except Exception as exc:
+        raise HTTPException(status_code=409, detail=f"Google Sheets Error: {str(exc)}")
 
     return breakdown
-
 
 # ── Dynamic routes stay LAST ──
 
@@ -124,7 +119,6 @@ def get_breakdown(breakdown_id: int, db: Session = Depends(get_db)):
     if not breakdown:
         raise HTTPException(status_code=404, detail="Breakdown not found")
     return breakdown
-
 
 @router.patch("/{breakdown_id}", response_model=schemas.BreakdownOut)
 def update_breakdown(
@@ -142,7 +136,6 @@ def update_breakdown(
     db.commit()
     db.refresh(breakdown)
     return breakdown
-
 
 @router.post("/{breakdown_id}/image", response_model=schemas.BreakdownOut)
 def replace_breakdown_image(
@@ -165,7 +158,6 @@ def replace_breakdown_image(
     db.commit()
     db.refresh(breakdown)
     return breakdown
-
 
 @router.delete("/{breakdown_id}")
 def delete_breakdown(

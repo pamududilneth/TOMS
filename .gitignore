@@ -25,3 +25,4 @@ dist-ssr
 
 google-service-account.json
 google-oauth-client.json
+google-oauth-token.json
