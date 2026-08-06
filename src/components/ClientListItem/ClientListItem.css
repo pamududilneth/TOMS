@@ -1,0 +1,53 @@
+.client-list-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.client-list-item:hover {
+    background: var(--surface-hover);
+}
+
+.client-list-item.active {
+    background: var(--accent-teal-dim);
+    border-left: 3px solid var(--accent-teal);
+    padding-left: 13px;
+}
+
+.client-list-item-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.client-list-item-email {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.client-share-status {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-top: 2px;
+}
+
+.client-share-status.shared {
+    background: var(--accent-teal-dim);
+    color: var(--accent-teal);
+}
+
+.client-share-status.pending {
+    background: var(--icon-amber-bg, rgba(217, 119, 6, 0.12));
+    color: var(--accent-amber);
+}

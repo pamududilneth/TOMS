@@ -1,0 +1,62 @@
+.report-list-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.report-list-item:hover {
+    background: var(--surface-hover);
+}
+
+.report-list-item.active {
+    background: var(--accent-teal-dim);
+    border-left: 3px solid var(--accent-teal);
+    padding-left: 13px;
+}
+
+.report-list-item-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.report-list-item-id {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-dot-submitted {
+    background: var(--accent-teal);
+}
+
+.status-dot-draft {
+    background: var(--accent-amber);
+}
+
+.report-list-item-vehicle {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.report-list-item-driver,
+.report-list-item-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+}

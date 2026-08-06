@@ -12,14 +12,23 @@ function Navbar() {
 
         <div className="navbar">
 
-            <div className="search-box">
+            <div className="navbar-left">
 
-                <FaSearch />
+                <div className="search-box">
 
-                <input
-                    type="text"
-                    placeholder="Search operations..."
-                />
+                    <FaSearch />
+
+                    <input
+                        type="text"
+                        placeholder="Search operations..."
+                    />
+
+                </div>
+
+                <div className="status-pill">
+                    <span className="pulse-dot" />
+                    System Operational
+                </div>
 
             </div>
 

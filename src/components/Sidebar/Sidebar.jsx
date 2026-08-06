@@ -1,106 +1,74 @@
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Sidebar.css";
+import { useAuth } from "../../context/AuthContext";
+import companyLogo from "../../assets/images/oki-doki-logo.png";
 import {
-    FaExclamationTriangle,
-    FaClipboardList,
-    FaUsers,
-    FaCog,
-    FaQuestionCircle,
-    FaSignOutAlt
-} from "react-icons/fa";
+    FiAlertTriangle,
+    FiClipboard,
+    FiFileText,
+    FiUsers,
+    FiSettings,
+    FiHelpCircle,
+    FiLogOut
+} from "react-icons/fi";
 
 function Sidebar() {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
 
     const menu = [
-        {
-            title: "Stop Management",
-            icon: <FaExclamationTriangle />,
-            active: true
-        },
-        {
-            title: "Breakdowns",
-            icon: <FaClipboardList />
-        },
-        {
-            title: "Reports",
-            icon: <FaClipboardList />
-        },
-        {
-            title: "Clients",
-            icon: <FaUsers />
-        },
-        {
-            title: "Settings",
-            icon: <FaCog />
-        }
+        { title: "Stop Management", icon: <FiAlertTriangle />, to: "/stop-management" },
+        { title: "Breakdowns", icon: <FiClipboard />, to: "/breakdowns" },
+        { title: "Reports", icon: <FiFileText />, to: "/reports" },
+        { title: "Clients", icon: <FiUsers />, to: "/clients" },
     ];
 
+    if (user?.role === "admin") {
+        menu.push({ title: "Settings", icon: <FiSettings />, to: "/settings" });
+    }
+
+    function handleLogout() {
+        logout();
+        navigate("/login");
+    }
+
     return (
-
         <div className="sidebar">
-
-            <div className="logo">
-
-                <h2>TOMS</h2>
-
-                <span>Antigravity</span>
-
-            </div>
+            <NavLink to="/" className="logo">
+                <img src={companyLogo} alt="Company Logo" className="logo-image" />
+            </NavLink>
 
             <div className="menu">
-
-                {
-
-                    menu.map((item, index) => (
-
-                        <div
-                            key={index}
-                            className={`menu-item ${item.active ? "active" : ""}`}
-                        >
-
-                            <span className="icon">
-
-                                {item.icon}
-
-                            </span>
-
-                            <span>
-
-                                {item.title}
-
-                            </span>
-
-                        </div>
-
-                    ))
-
-                }
-
+                {menu.map((item) => (
+                    <NavLink
+                        key={item.to}
+                        to={item.to}
+                        className={({ isActive }) => `menu-item ${isActive ? "active" : ""}`}
+                    >
+                        <span className="icon">{item.icon}</span>
+                        <span>{item.title}</span>
+                    </NavLink>
+                ))}
             </div>
 
             <div className="bottom">
-
+                {user && (
+                    <div className="sidebar-user">
+                        <span className="sidebar-user-name">{user.full_name || user.username}</span>
+                        <span className="sidebar-user-role">{user.role}</span>
+                    </div>
+                )}
                 <div className="menu-item">
-
-                    <FaQuestionCircle />
-
+                    <FiHelpCircle />
                     <span>Help Center</span>
-
                 </div>
-
-                <div className="menu-item">
-
-                    <FaSignOutAlt />
-
+                <div className="menu-item" onClick={handleLogout}>
+                    <FiLogOut />
                     <span>Log Out</span>
-
                 </div>
-
             </div>
-
         </div>
-
     );
-
 }
 
 export default Sidebar;

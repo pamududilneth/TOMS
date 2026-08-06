@@ -14,7 +14,7 @@ function StatCard({ title, value, icon, color }) {
 
             <div
                 className="stat-icon"
-                style={{ backgroundColor: color }}
+                style={{ "--stat-color": color }}
             >
                 {icon}
             </div>
