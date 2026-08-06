@@ -56,7 +56,19 @@ def append_incident_row(sheet_title: str, row_values: list):
 
 # TODO: Change these headers to exactly match your Excel columns
 BREAKDOWN_HEADERS = [
-    "ID", "Vehicle Number", "Driver Name", "Location", "Issue Description", "Reported At", "Status"
+    "Job Number",
+    "Vehicle Number",
+    "Requesting Plant",
+    "Pickup Location",
+    "Via Location",
+    "Delivery Location",
+    "Incident Type",
+    "Incident Date & Time",
+    "Breakdown/Accident Location",
+    "Reason",
+    "Action Taken",
+    "Priority",
+    "Status",
 ]
 
 STOP_MANAGEMENT_HEADERS = [
@@ -100,3 +112,41 @@ def append_master_incident_row(row_values: list):
     sh = get_or_create_master_sheet(sheet_name, INCIDENT_HEADERS)
     ws = sh.sheet1
     ws.append_row(row_values, value_input_option="USER_ENTERED")
+
+
+def delete_row_by_value(sheet_title: str, match_value: str, column: int = 1) -> bool:
+    """
+    Finds a cell in the given column matching match_value exactly, and
+    deletes that entire row. Returns True if found and deleted, False if
+    the sheet doesn't exist or no matching row was found. Never raises —
+    a missing sheet/row shouldn't block the actual database deletion.
+    """
+    gc = _get_client()
+
+    try:
+        sh = gc.open(sheet_title)
+    except gspread.SpreadsheetNotFound:
+        return False
+
+    ws = sh.sheet1
+
+    try:
+        cell = ws.find(str(match_value), in_column=column)
+    except gspread.exceptions.CellNotFound:
+        cell = None
+
+    if cell is None:
+        return False
+
+    ws.delete_rows(cell.row)
+    return True
+
+
+def delete_master_incident_row(request_id: str) -> bool:
+    """Deletes the matching row from the centralized Incidents Master sheet."""
+    return delete_row_by_value("TOMS - Incidents Master", request_id, column=1)
+
+
+def delete_breakdown_row(job_number: str) -> bool:
+    """Deletes the matching row from the Vehicle Breakdowns Master sheet."""
+    return delete_row_by_value("TOMS - Vehicle Breakdowns Master", job_number, column=1)

@@ -3,6 +3,7 @@ from datetime import datetime
 
 from .email_sender import send_report_link_email
 from .google_sheets_client import get_or_create_client_sheet, append_incident_row
+from .google_sheets_client import delete_row_by_value
 
 
 def _sheet_title(client_name: str) -> str:
@@ -45,3 +46,16 @@ def share_incident_with_client(client, incident, db):
         client.first_shared_at = datetime.now()
         db.add(client)
         db.commit()
+
+
+def remove_incident_from_client_sheet(client_name: str, request_id: str) -> bool:
+    """
+    Deletes the matching row from this client's personal Google Sheet, if
+    the sheet and row exist. Safe to call even if the client was never
+    shared with — returns False rather than raising.
+    """
+    title = _sheet_title(client_name)
+    try:
+        return delete_row_by_value(title, request_id, column=1)
+    except Exception:
+        return False

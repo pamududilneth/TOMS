@@ -7,6 +7,7 @@ import FormSection from "../../components/FormSection/FormSection";
 import FormField from "../../components/FormField/FormField";
 import SegmentedToggle from "../../components/SegmentedToggle/SegmentedToggle";
 import ImageUploadField from "../../components/ImageUploadField/ImageUploadField";
+import BreakdownSuccessModal from "../../components/BreakdownSuccessModal/BreakdownSuccessModal";
 import { api } from "../../lib/api";
 
 import {
@@ -38,6 +39,7 @@ function Breakdowns() {
     const [imageFile, setImageFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
+    const [submittedBreakdown, setSubmittedBreakdown] = useState(null); // Added state for the modal
 
     useEffect(() => {
         refreshJobNumber();
@@ -65,8 +67,10 @@ function Breakdowns() {
                 formData.append("image", imageFile);
             }
 
-            await api.createBreakdown(formData);
+            // Capture the returned breakdown data to pass to the modal
+            const created = await api.createBreakdown(formData);
 
+            setSubmittedBreakdown(created); // Triggers the modal to open
             setForm(emptyForm);
             setImageFile(null);
             refreshJobNumber();
@@ -221,6 +225,12 @@ function Breakdowns() {
                     {submitting ? "Submitting..." : "Finalize and Notify Teams"}
                 </button>
             </div>
+
+            {/* Added Modal Component Here */}
+            <BreakdownSuccessModal
+                breakdown={submittedBreakdown}
+                onClose={() => setSubmittedBreakdown(null)}
+            />
         </>
     );
 }

@@ -9,6 +9,9 @@ from ..utils.google_sheets_client import append_master_incident_row
 from ..utils.client_share import share_incident_with_client
 from ..utils.auth import require_admin
 
+from ..utils.google_sheets_client import append_master_incident_row, delete_master_incident_row
+from ..utils.client_share import share_incident_with_client, remove_incident_from_client_sheet
+
 router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
 def generate_request_id(db: Session) -> str:
@@ -105,6 +108,19 @@ def delete_incident(
     incident = db.query(models.Incident).filter(models.Incident.id == incident_id).first()
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
+
+    # Capture what we need before the row is gone from the database
+    shared_clients = list(incident.shared_clients)
+    request_id = incident.request_id
+
     db.delete(incident)
     db.commit()
+
+    # Remove from the master sheet
+    delete_master_incident_row(request_id)
+
+    # Remove from every client's individual sheet this was shared to
+    for client in shared_clients:
+        remove_incident_from_client_sheet(client.name, request_id)
+
     return {"deleted": True}

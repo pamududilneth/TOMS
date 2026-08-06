@@ -9,6 +9,7 @@ from .. import models, schemas
 from ..database import get_db
 from ..utils.google_sheets_client import append_breakdown_row  # Import the new Google Sheets function
 from ..utils.auth import require_admin
+from ..utils.google_sheets_client import append_breakdown_row, delete_breakdown_row
 
 router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
 
@@ -168,6 +169,13 @@ def delete_breakdown(
     breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
     if not breakdown:
         raise HTTPException(status_code=404, detail="Breakdown not found")
+
+    # Capture before deleting from the database
+    job_number = breakdown.job_number
+
     db.delete(breakdown)
     db.commit()
+
+    delete_breakdown_row(job_number)
+
     return {"deleted": True}
