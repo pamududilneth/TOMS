@@ -8,6 +8,7 @@ import FormField from "../../components/FormField/FormField";
 import SegmentedToggle from "../../components/SegmentedToggle/SegmentedToggle";
 import ToggleSwitch from "../../components/ToggleSwitch/ToggleSwitch";
 import ClientShareSelect from "../../components/ClientShareSelect/ClientShareSelect";
+import SubmitSuccessModal from "../../components/SubmitSuccessModal/SubmitSuccessModal";
 import { api } from "../../lib/api";
 
 import {
@@ -41,6 +42,7 @@ function IncidentEntry() {
     const [form, setForm] = useState(emptyForm);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
+    const [submittedIncident, setSubmittedIncident] = useState(null); // Added state for the modal
 
     const [coordinators, setCoordinators] = useState([]);
     const [clients, setClients] = useState([]);
@@ -74,15 +76,17 @@ function IncidentEntry() {
         setForm((prev) => ({ ...prev, [name]: value }));
     }
 
+    // Updated handleSubmit with modal logic
     async function handleSubmit() {
         setSubmitting(true);
         setError(null);
         try {
-            await api.createIncident({ ...form, client_ids: selectedClientIds });
+            const created = await api.createIncident({ ...form, client_ids: selectedClientIds });
+            setSubmittedIncident(created); // Triggers the modal to open
             setForm(emptyForm);
             setSelectedClientIds([]);
             refreshRequestId();
-            refreshClients(); // picks up updated "shared" status/links after this submission
+            refreshClients();
         } catch (err) {
             setError(err.message);
         } finally {
@@ -111,9 +115,7 @@ function IncidentEntry() {
             {error && <p className="form-error">{error}</p>}
 
             <div className="incident-entry-grid">
-
                 <div className="form-main">
-
                     <FormSection icon={<FiAlertTriangle />} iconColor="red" title="Incident & Vehicle Info">
                         <div className="form-row">
                             <FormField
@@ -205,11 +207,9 @@ function IncidentEntry() {
                             />
                         </div>
                     </FormSection>
-
                 </div>
 
                 <div className="form-side">
-
                     <FormSection icon={<FiFileText />} iconColor="blue" title="Status & Feedback">
                         <SegmentedToggle
                             label="Driver Contacted"
@@ -259,10 +259,14 @@ function IncidentEntry() {
                             <li>Customers are emailed the link only the first time</li>
                         </ul>
                     </div>
-
                 </div>
-
             </div>
+
+            {/* Added Modal Component */}
+            <SubmitSuccessModal
+                incident={submittedIncident}
+                onClose={() => setSubmittedIncident(null)}
+            />
         </>
     );
 }
