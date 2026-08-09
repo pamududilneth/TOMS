@@ -23,6 +23,20 @@ dist-ssr
 *.sln
 *.sw?
 
-google-service-account.json
-google-oauth-client.json
-google-oauth-token.json
+# Backend secrets and generated files
+toms-backend/.env
+toms-backend/google-service-account.json
+toms-backend/google-oauth-client.json
+toms-backend/google-oauth-token.json
+toms-backend/toms.db
+
+# Backend runtime data — never commit
+toms-backend/uploads/
+toms-backend/venv/
+
+# Python bytecode cache — anywhere in the repo
+__pycache__/
+*.pyc
+
+# Frontend env
+.env

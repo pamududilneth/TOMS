@@ -17,11 +17,18 @@ INCIDENT_HEADERS = [
     "Request ID",
     "Vehicle Number",
     "Driver Name",
-    "Driver Contact Number",
+    "Driver contact number",
+    "Vehicle Assigned Coordinator",
+    "Coordinator mobile number",
+    "Driver Contacted YES/NO",
+    "If contacted driver feedback",
+    "Is the vehicle parked with the goods YES/NO",
+    "Where the vehicle is currently parked",
+    "Parked time",
     "Pickup Location",
+    "Via Location/Locations",
     "Delivery Location",
-    "Status",
-    "Submitted At",
+    "Approver",
 ]
 
 def get_or_create_client_sheet(sheet_title: str, client_email: str | None):
@@ -34,7 +41,7 @@ def get_or_create_client_sheet(sheet_title: str, client_email: str | None):
         sh = gc.create(sheet_title)
         ws = sh.sheet1
         ws.update("A1", [INCIDENT_HEADERS])
-        ws.format("A1:H1", {"textFormat": {"bold": True}})
+        ws.format("A1:O1", {"textFormat": {"bold": True}})
         created = True
 
     if created and client_email:
@@ -62,13 +69,12 @@ BREAKDOWN_HEADERS = [
     "Pickup Location",
     "Via Location",
     "Delivery Location",
-    "Incident Type",
-    "Incident Date & Time",
-    "Breakdown/Accident Location",
+    "Incident (Break down/ Accident)",
     "Reason",
-    "Action Taken",
-    "Priority",
-    "Status",
+    "Break down / Accident happened location",
+    "Date & Time",
+    "Image of the breakdown place",
+    "Monitoring center Action",
 ]
 
 STOP_MANAGEMENT_HEADERS = [
@@ -84,11 +90,10 @@ def get_or_create_master_sheet(sheet_title: str, headers: list):
         sh = gc.create(sheet_title)
         ws = sh.sheet1
         ws.update("A1", [headers])
-        
-        # Dynamically makes the header row bold based on how many columns you have
-        end_col_letter = chr(64 + len(headers)) 
+
+        end_col_letter = chr(64 + len(headers))
         ws.format(f"A1:{end_col_letter}1", {"textFormat": {"bold": True}})
-    
+
     return sh
 
 def append_breakdown_row(row_values: list):
@@ -150,3 +155,67 @@ def delete_master_incident_row(request_id: str) -> bool:
 def delete_breakdown_row(job_number: str) -> bool:
     """Deletes the matching row from the Vehicle Breakdowns Master sheet."""
     return delete_row_by_value("TOMS - Vehicle Breakdowns Master", job_number, column=1)
+
+
+def set_row_height(sheet_title: str, row_number: int, height_px: int = 230):
+    gc = _get_client()
+    try:
+        sh = gc.open(sheet_title)
+    except gspread.SpreadsheetNotFound:
+        return
+
+    ws = sh.sheet1
+    sheet_id = ws.id
+
+    body = {
+        "requests": [
+            {
+                "updateDimensionProperties": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "dimension": "ROWS",
+                        "startIndex": row_number - 1,
+                        "endIndex": row_number,
+                    },
+                    "properties": {"pixelSize": height_px},
+                    "fields": "pixelSize",
+                }
+            }
+        ]
+    }
+    sh.batch_update(body)
+
+def set_column_width(sheet_title: str, column_index: int, width_px: int = 320):
+    """
+    Sets a specific column's width in pixels (1-based index).
+    Needed alongside set_row_height so a custom-size IMAGE() isn't
+    visually clipped by a narrow default column.
+    """
+    gc = _get_client()
+    try:
+        sh = gc.open(sheet_title)
+    except gspread.SpreadsheetNotFound:
+        return
+
+    ws = sh.sheet1
+    sheet_id = ws.id
+
+    body = {
+        "requests": [
+            {
+                "updateDimensionProperties": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "dimension": "COLUMNS",
+                        "startIndex": column_index - 1,
+                        "endIndex": column_index,
+                    },
+                    "properties": {"pixelSize": width_px},
+                    "fields": "pixelSize",
+                }
+            }
+        ]
+    }
+    sh.batch_update(body)
+
+    

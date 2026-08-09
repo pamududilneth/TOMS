@@ -51,11 +51,17 @@ def create_incident(payload: schemas.IncidentCreate, db: Session = Depends(get_d
         incident.vehicle_number,
         incident.driver_name,
         incident.driver_contact_number,
+        incident.assigned_coordinator,
+        incident.coordinator_mobile_number,
+        incident.driver_contacted,
+        incident.driver_feedback,
+        "Yes" if incident.vehicle_parked else "No",
+        incident.current_parking_location,
+        incident.parked_time,
         incident.pickup_location,
+        incident.via_locations,
         incident.delivery_location,
-        incident.status,
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+        incident.approver,
     ]
 
     try:

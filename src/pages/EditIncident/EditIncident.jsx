@@ -175,7 +175,7 @@ function EditIncident() {
                             />
                             <FormField
                                 label="Parked Time"
-                                icon={<FiClock />}
+                                type="datetime-local"
                                 value={form.parked_time || ""}
                                 onChange={(e) => updateField("parked_time", e.target.value)}
                             />

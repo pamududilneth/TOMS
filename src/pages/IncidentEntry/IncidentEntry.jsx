@@ -17,7 +17,7 @@ import {
     FiMapPin,
     FiFileText,
     FiCheckCircle,
-    FiClock
+    FiClock,
 } from "react-icons/fi";
 
 const emptyForm = {
@@ -127,7 +127,7 @@ function IncidentEntry() {
                             <FormField
                                 label="Vehicle Number"
                                 required
-                                placeholder="e.g. MH 12 AB 1234"
+                                placeholder="e.g. NC 2534"
                                 value={form.vehicle_number}
                                 onChange={(e) => updateField("vehicle_number", e.target.value)}
                             />
@@ -180,9 +180,8 @@ function IncidentEntry() {
                             />
                             <FormField
                                 label="Parked Time"
-                                icon={<FiClock />}
-                                placeholder="--:-- --"
-                                value={form.parked_time}
+                                type="datetime-local"
+                                value={form.parked_time || ""}
                                 onChange={(e) => updateField("parked_time", e.target.value)}
                             />
                         </div>

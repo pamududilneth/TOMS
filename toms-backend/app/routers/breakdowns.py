@@ -11,6 +11,7 @@ from ..utils.google_sheets_client import append_breakdown_row  # Import the new 
 from ..utils.auth import require_admin
 from ..utils.google_sheets_client import append_breakdown_row, delete_breakdown_row
 
+
 router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
 
 UPLOAD_DIR = os.path.join(
@@ -60,6 +61,7 @@ def create_breakdown(
     job_number = generate_job_number(db)
 
     image_filename = None
+    dest_path = None
     if image and image.filename:
         os.makedirs(UPLOAD_DIR, exist_ok=True)
         ext = os.path.splitext(image.filename)[1]
@@ -88,7 +90,8 @@ def create_breakdown(
     db.commit()
     db.refresh(breakdown)
 
-    # Convert the breakdown database object into a simple list for Google Sheets
+    
+
     row_data = [
         breakdown.job_number,
         breakdown.vehicle_number,
@@ -97,12 +100,11 @@ def create_breakdown(
         breakdown.via_location,
         breakdown.delivery_location,
         breakdown.incident_type,
-        breakdown.incident_datetime,
-        breakdown.location,
         breakdown.reason,
+        breakdown.location,
+        breakdown.incident_datetime,
+        breakdown.image_filename or "",
         breakdown.action_taken,
-        breakdown.priority,
-        breakdown.status
     ]
 
     try:

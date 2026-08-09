@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./SubmitSuccessModal.css";
-import { buildSingleIncidentTableHTML } from "../../utils/reportTable";
+import { copyIncidentTableToClipboard } from "../../utils/clipboardCopy";
 import { FiCheckCircle, FiCopy, FiX } from "react-icons/fi";
 
 function SubmitSuccessModal({ incident, onClose }) {
@@ -17,24 +17,13 @@ function SubmitSuccessModal({ incident, onClose }) {
     if (!incident) return null;
 
     async function handleCopyForEmail() {
-        const html = buildSingleIncidentTableHTML(incident, { standalone: false });
-        const plain = `Incident Report — ${incident.request_id}`;
-
         try {
-            if (navigator.clipboard && window.ClipboardItem) {
-                const item = new ClipboardItem({
-                    "text/html": new Blob([html], { type: "text/html" }),
-                    "text/plain": new Blob([plain], { type: "text/plain" }),
-                });
-                await navigator.clipboard.write([item]);
-            } else {
-                await navigator.clipboard.writeText(plain);
-            }
+            await copyIncidentTableToClipboard(incident);
             setCopyStatus("Copied! Paste into your Outlook email.");
-        } catch {
+        } catch (err) {
+            console.error("[copy] Clipboard write failed:", err);
             setCopyStatus("Copy failed — try again.");
         }
-
         setTimeout(() => setCopyStatus(""), 3500);
     }
 

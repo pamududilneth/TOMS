@@ -5,6 +5,7 @@ import { buildSingleIncidentTableHTML } from "../../utils/reportTable";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
+import { copyIncidentTableToClipboard } from "../../utils/clipboardCopy";
 
 import { FiPrinter, FiDownload, FiCopy, FiEdit2, FiTrash2, FiAlertTriangle, FiUser, FiMapPin, FiFileText, FiCheckCircle } from "react-icons/fi";
 
@@ -46,24 +47,13 @@ function ReportDetail({ incident, onDeleted }) {
     }
 
     async function handleCopyForEmail() {
-        const html = buildSingleIncidentTableHTML(incident, { standalone: false });
-        const plain = `Incident Report — ${incident.request_id}`;
-
         try {
-            if (navigator.clipboard && window.ClipboardItem) {
-                const item = new ClipboardItem({
-                    "text/html": new Blob([html], { type: "text/html" }),
-                    "text/plain": new Blob([plain], { type: "text/plain" }),
-                });
-                await navigator.clipboard.write([item]);
-            } else {
-                await navigator.clipboard.writeText(plain);
-            }
+            await copyIncidentTableToClipboard(incident);
             setCopyStatus("Copied! Paste into your Outlook email.");
-        } catch {
-            setCopyStatus("Copy failed — try Download instead.");
+        } catch (err) {
+            console.error("[copy] Clipboard write failed:", err);
+            setCopyStatus("Copy failed — try again.");
         }
-
         setTimeout(() => setCopyStatus(""), 3500);
     }
 

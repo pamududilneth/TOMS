@@ -5,6 +5,7 @@ import { buildSingleBreakdownTableHTML } from "../../utils/reportTable";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
+import { copyBreakdownTableToClipboard } from "../../utils/clipboardCopy";
 import { FiPrinter, FiDownload, FiCopy, FiEdit2, FiTrash2, FiBriefcase, FiNavigation, FiAlertTriangle, FiCheckSquare, FiTruck } from "react-icons/fi";
 
 
@@ -31,8 +32,31 @@ function BreakdownReportDetail({ breakdown, onDeleted }) {
         );
     }
 
-    function handleDownloadHtml() {
-        const html = buildSingleBreakdownTableHTML(breakdown, { standalone: true });
+    async function handleDownloadHtml() {
+        let imageDataUrl = null;
+
+        if (breakdown.image_filename) {
+            try {
+                const res = await fetch(`/api/breakdowns/uploads/${breakdown.image_filename}`);
+                if (res.ok) {
+                    const blob = await res.blob();
+                    imageDataUrl = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+                }
+            } catch (err) {
+                console.error("[download] Image embed failed:", err);
+            }
+        }
+
+        const html = buildSingleBreakdownTableHTML(breakdown, {
+            standalone: true,
+            imageDataUrl,
+        });
+
         const blob = new Blob([html], { type: "text/html" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -45,26 +69,20 @@ function BreakdownReportDetail({ breakdown, onDeleted }) {
     }
 
     async function handleCopyForEmail() {
-        const html = buildSingleBreakdownTableHTML(breakdown, { standalone: false });
-        const plain = `Breakdown Report — ${breakdown.job_number}`;
-
         try {
-            if (navigator.clipboard && window.ClipboardItem) {
-                const item = new ClipboardItem({
-                    "text/html": new Blob([html], { type: "text/html" }),
-                    "text/plain": new Blob([plain], { type: "text/plain" }),
-                });
-                await navigator.clipboard.write([item]);
-            } else {
-                await navigator.clipboard.writeText(plain);
-            }
-            setCopyStatus("Copied! Paste into your Outlook email.");
-        } catch {
-            setCopyStatus("Copy failed — try Download instead.");
+            const result = await copyBreakdownTableToClipboard(breakdown);
+            setCopyStatus(
+                result.hasImage
+                    ? "Copied with image! Paste into your Outlook email."
+                    : "Copied (no image found). Paste into your Outlook email."
+            );
+        } catch (err) {
+            console.error("[copy] Clipboard write failed:", err);
+            setCopyStatus("Copy failed — try again.");
         }
-
-        setTimeout(() => setCopyStatus(""), 3500);
+        setTimeout(() => setCopyStatus(""), 4000);
     }
+
     async function handleDelete() {
         const confirmed = window.confirm(
             `Delete breakdown ${breakdown.job_number}? This cannot be undone.`
