@@ -37,6 +37,7 @@ class Incident(Base):
 
     status = Column(String, default="submitted")  # draft | submitted
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     # 2. Add the reverse relationship so Client can back_populate
     shared_clients = relationship(
@@ -88,6 +89,8 @@ class Breakdown(Base):
     status = Column(String, default="submitted")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
 class User(Base):
     __tablename__ = "users"
 
@@ -95,5 +98,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=True)
-    role = Column(String, default="staff")  # "admin" | "staff"
+    role = Column(String, default="staff")
     is_active = Column(Boolean, default=True)
+    email = Column(String, unique=True, nullable=True)
+    google_sub = Column(String, unique=True, nullable=True)

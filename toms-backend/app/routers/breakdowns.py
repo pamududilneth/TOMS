@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
-from ..utils.google_sheets_client import append_breakdown_row  # Import the new Google Sheets function
-from ..utils.auth import require_admin
+# ---> UPDATED: Added get_current_user here
+from ..utils.auth import require_admin, get_current_user
 from ..utils.google_sheets_client import append_breakdown_row, delete_breakdown_row
 
 
@@ -17,6 +17,14 @@ router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
 UPLOAD_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "breakdowns"
 )
+
+# ---> NEW: Helper function to filter breakdowns by the logged-in user
+def _visible_query(db: Session, current_user: models.User):
+    query = db.query(models.Breakdown)
+    if current_user.role != "admin":
+        query = query.filter(models.Breakdown.owner_id == current_user.id)
+    return query
+
 
 def generate_job_number(db: Session) -> str:
     year = datetime.now().year
@@ -28,7 +36,10 @@ def generate_job_number(db: Session) -> str:
 # ── Static/literal routes must come BEFORE the dynamic /{breakdown_id} route ──
 
 @router.get("/next-id")
-def next_job_number(db: Session = Depends(get_db)):
+def next_job_number(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user) # Secured
+):
     return {"job_number": generate_job_number(db)}
 
 @router.get("/uploads/{filename}")
@@ -38,9 +49,15 @@ def get_uploaded_image(filename: str):
         raise HTTPException(status_code=404, detail="Image not found")
     return FileResponse(path)
 
+
 @router.get("/", response_model=list[schemas.BreakdownOut])
-def list_breakdowns(db: Session = Depends(get_db)):
-    return db.query(models.Breakdown).order_by(models.Breakdown.id.desc()).all()
+def list_breakdowns(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user) # ---> UPDATED
+):
+    # ---> UPDATED: Using _visible_query
+    return _visible_query(db, current_user).order_by(models.Breakdown.id.desc()).all()
+
 
 @router.post("/", response_model=schemas.BreakdownOut)
 def create_breakdown(
@@ -57,6 +74,7 @@ def create_breakdown(
     priority: str = Form("High Intervention"),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user), # ---> UPDATED
 ):
     job_number = generate_job_number(db)
 
@@ -72,6 +90,7 @@ def create_breakdown(
 
     breakdown = models.Breakdown(
         job_number=job_number,
+        owner_id=current_user.id, # ---> UPDATED: Tagging the breakdown to this user
         vehicle_number=vehicle_number,
         requesting_plant=requesting_plant,
         pickup_location=pickup_location,
@@ -89,8 +108,6 @@ def create_breakdown(
     db.add(breakdown)
     db.commit()
     db.refresh(breakdown)
-
-    
 
     row_data = [
         breakdown.job_number,
@@ -117,19 +134,27 @@ def create_breakdown(
 # ── Dynamic routes stay LAST ──
 
 @router.get("/{breakdown_id}", response_model=schemas.BreakdownOut)
-def get_breakdown(breakdown_id: int, db: Session = Depends(get_db)):
-    breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
+def get_breakdown(
+    breakdown_id: int, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user) # ---> UPDATED
+):
+    # ---> UPDATED: Using _visible_query
+    breakdown = _visible_query(db, current_user).filter(models.Breakdown.id == breakdown_id).first()
     if not breakdown:
         raise HTTPException(status_code=404, detail="Breakdown not found")
     return breakdown
+
 
 @router.patch("/{breakdown_id}", response_model=schemas.BreakdownOut)
 def update_breakdown(
     breakdown_id: int,
     payload: schemas.BreakdownUpdate,
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user), # ---> UPDATED
 ):
-    breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
+    # ---> UPDATED: Using _visible_query
+    breakdown = _visible_query(db, current_user).filter(models.Breakdown.id == breakdown_id).first()
     if not breakdown:
         raise HTTPException(status_code=404, detail="Breakdown not found")
 
@@ -140,13 +165,16 @@ def update_breakdown(
     db.refresh(breakdown)
     return breakdown
 
+
 @router.post("/{breakdown_id}/image", response_model=schemas.BreakdownOut)
 def replace_breakdown_image(
     breakdown_id: int,
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user), # ---> UPDATED
 ):
-    breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
+    # ---> UPDATED: Using _visible_query to ensure they only replace their own images!
+    breakdown = _visible_query(db, current_user).filter(models.Breakdown.id == breakdown_id).first()
     if not breakdown:
         raise HTTPException(status_code=404, detail="Breakdown not found")
 
@@ -162,11 +190,12 @@ def replace_breakdown_image(
     db.refresh(breakdown)
     return breakdown
 
+
 @router.delete("/{breakdown_id}")
 def delete_breakdown(
     breakdown_id: int,
     db: Session = Depends(get_db),
-    _admin=Depends(require_admin),
+    _admin=Depends(require_admin), # Admin only route, already secure!
 ):
     breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
     if not breakdown:

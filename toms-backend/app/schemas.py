@@ -150,6 +150,7 @@ class UserOut(BaseModel):
     full_name: Optional[str] = None
     role: str
     is_active: bool
+    email: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -171,3 +172,7 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserOut
+
+
+class GoogleLoginRequest(BaseModel):
+    credential: str
