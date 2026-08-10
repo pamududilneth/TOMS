@@ -1,6 +1,7 @@
 .topbar {
     height: 64px;
-    background: rgba(255, 255, 255, 0.25);
+    /* Increase the 0.25 to 0.8 here */
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
@@ -11,9 +12,7 @@
     position: sticky;
     top: 0;
     z-index: 999;
-    /* Increased to sit cleanly and interactively above all dashboard elements */
     pointer-events: auto;
-    /* Forces click events to always register instantly */
 }
 
 .topbar-left {
