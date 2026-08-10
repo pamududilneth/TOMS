@@ -8,7 +8,7 @@ services:
     volumes:
       - toms-data:/app/data
       - toms-uploads:/app/uploads
-      - ./toms-backend/google-oauth-token.json:/app/google-oauth-token.json:ro
+      - ./toms-backend/google-oauth-token.json:/app/google-oauth-token.json
 
   frontend:
     build:
