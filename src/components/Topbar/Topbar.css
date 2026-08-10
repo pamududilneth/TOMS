@@ -2,9 +2,14 @@
     height: 64px;
     background: var(--glass-bg);
     backdrop-filter: blur(24px);
-    /* Increased from 16px */
     -webkit-backdrop-filter: blur(24px);
-    /* Increased from 16px */
+
+    /* --- THE FIX: Force GPU Rendering --- */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: backdrop-filter;
+    /* ------------------------------------ */
+
     border-bottom: 1px solid var(--glass-border);
     display: flex;
     align-items: center;
