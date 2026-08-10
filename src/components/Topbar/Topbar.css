@@ -1,16 +1,5 @@
 .topbar {
     height: 64px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-
-    /* --- THE FIX: Force GPU Rendering --- */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    will-change: backdrop-filter;
-    /* ------------------------------------ */
-
-    border-bottom: 1px solid var(--glass-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -19,6 +8,28 @@
     top: 0;
     z-index: 999;
     pointer-events: auto;
+
+    /* 1. Make the main container completely transparent */
+    background: transparent;
+    border-bottom: none;
+
+    /* 2. Remove any transforms/filters from this main container */
+}
+
+/* 3. Create a dedicated background layer just for the glass effect */
+.topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* This stretches the layer to fill the topbar */
+    z-index: -1;
+    /* Pushes the glass layer behind your icons and profile */
+
+    /* 4. Hardcode the liquid glass values directly */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .topbar-left {
