@@ -21,18 +21,40 @@ function Login() {
 
     // 3. Update the useEffect
     useEffect(() => {
-        if (!window.google || !GOOGLE_CLIENT_ID || googleInit.current) return;
+        // 1. Debug check to prove Docker injected the ID!
+        console.log("Loaded Client ID:", GOOGLE_CLIENT_ID);
 
-        googleInit.current = true; // Mark as initialized so it doesn't run twice
+        if (!GOOGLE_CLIENT_ID) {
+            console.error("Vite did not inject the Google Client ID!");
+            return;
+        }
 
-        window.google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleResponse,
-        });
-        window.google.accounts.id.renderButton(
-            document.getElementById("google-signin-button"),
-            { theme: "outline", size: "large", width: 320 }
-        );
+        // 2. The function that draws the button
+        const initializeGoogle = () => {
+            if (!window.google) return;
+            window.google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleResponse,
+            });
+            window.google.accounts.id.renderButton(
+                document.getElementById("google-signin-button"),
+                { theme: "outline", size: "large", width: 320 }
+            );
+        };
+
+        // 3. Dynamically inject the script to prevent race conditions
+        let script = document.getElementById("google-gsi-script");
+        if (!script) {
+            script = document.createElement("script");
+            script.id = "google-gsi-script";
+            script.src = "https://accounts.google.com/gsi/client";
+            script.async = true;
+            script.defer = true;
+            script.onload = initializeGoogle; // Wait until it loads to draw!
+            document.body.appendChild(script);
+        } else {
+            initializeGoogle();
+        }
     }, []);
 
     // ... [The rest of your component stays exactly the same] ...
