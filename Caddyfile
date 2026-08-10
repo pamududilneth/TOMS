@@ -1,4 +1,4 @@
-:80 {
+34.14.201.225.nip.io {
     handle /api/* {
         reverse_proxy backend:8000
     }
