@@ -12,8 +12,10 @@
 .submit-modal-card {
     position: relative;
     background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(24px);
+    /* Increased from 16px */
+    -webkit-backdrop-filter: blur(24px);
+    /* Increased from 16px */
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     border-radius: 16px;
