@@ -14,9 +14,11 @@ from ..utils.google_sheets_client import append_breakdown_row, delete_breakdown_
 
 router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
 
-UPLOAD_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "breakdowns"
-)
+# UPLOAD_DIR = os.path.join(
+#     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "breakdowns"
+# )
+
+UPLOAD_DIR = "/app/uploads/breakdowns"
 
 # ---> NEW: Helper function to filter breakdowns by the logged-in user
 def _visible_query(db: Session, current_user: models.User):

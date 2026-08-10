@@ -4,13 +4,13 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.utils import get_column_letter
 
-EXCEL_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
+# ---> UPDATED FOR DOCKER DEPLOYMENT
+EXCEL_DIR = "/app/data/exports"
 EXCEL_PATH = os.path.join(EXCEL_DIR, "breakdowns.xlsx")
 
 # Must match UPLOAD_DIR in app/routers/breakdowns.py
-UPLOAD_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "breakdowns"
-)
+# ---> UPDATED FOR DOCKER DEPLOYMENT
+UPLOAD_DIR = "/app/uploads/breakdowns"
 
 HEADERS = [
     "Job Number",

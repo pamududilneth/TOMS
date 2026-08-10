@@ -1,0 +1,42 @@
+services:
+  backend:
+    build: ./toms-backend
+    container_name: toms-backend
+    restart: always
+    env_file:
+      - ./toms-backend/.env
+    volumes:
+      - toms-data:/app/data
+      - toms-uploads:/app/uploads
+      - ./toms-backend/google-oauth-token.json:/app/google-oauth-token.json:ro
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: toms-frontend-build
+    volumes:
+      - frontend-dist:/app/dist
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: toms-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - frontend-dist:/srv
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  toms-data:
+  toms-uploads:
+  frontend-dist:
+  caddy-data:
+  caddy-config:
