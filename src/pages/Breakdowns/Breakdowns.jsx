@@ -56,6 +56,13 @@ function Breakdowns() {
     }
 
     async function handleSubmit() {
+        // --- 1. FRONTEND VALIDATION (Stops the process if empty) ---
+        if (!form.vehicle_number || form.vehicle_number.trim() === "") {
+            setError("Please enter a Vehicle Number before submitting.");
+            window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll up so they see the error
+            return;
+        }
+
         setSubmitting(true);
         setError(null);
         try {
@@ -75,7 +82,14 @@ function Breakdowns() {
             setImageFile(null);
             refreshJobNumber();
         } catch (err) {
-            setError(err.message);
+            // --- 2. BACKEND ERROR PARSING (Fixes the [object Object] issue) ---
+            if (err.response && err.response.status === 422) {
+                const errorDetail = err.response.data.detail[0];
+                const fieldName = errorDetail.loc[1].replace("_", " ");
+                setError(`Backend Error: The '${fieldName}' field is required.`);
+            } else {
+                setError(err.message || "An error occurred while submitting.");
+            }
         } finally {
             setSubmitting(false);
         }
