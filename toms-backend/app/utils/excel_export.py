@@ -2,8 +2,8 @@ import os
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
 
-# ---> UPDATED FOR DOCKER DEPLOYMENT
-EXCEL_DIR = "/app/data/exports"
+# Reverted to local Downloads folder
+EXCEL_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
 EXCEL_PATH = os.path.join(EXCEL_DIR, "incidents.xlsx")
 
 HEADERS = [

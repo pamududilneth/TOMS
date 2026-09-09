@@ -1,18 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-
-from .. import models, schemas
-from ..database import get_db
-from ..utils.auth import verify_password, create_access_token, get_current_user
+import secrets
 
 from .. import models, schemas
 from ..database import get_db
 from ..utils.auth import (
-    verify_password, create_access_token, get_current_user,
-    verify_google_token, hash_password,
+    verify_password, 
+    create_access_token, 
+    get_current_user,
+    verify_microsoft_token, 
+    hash_password,
 )
-import secrets
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -37,21 +36,22 @@ def read_current_user(current_user: models.User = Depends(get_current_user)):
     return current_user
 
 
-@router.post("/google", response_model=schemas.TokenResponse)
-def google_login(payload: schemas.GoogleLoginRequest, db: Session = Depends(get_db)):
+@router.post("/microsoft", response_model=schemas.TokenResponse)
+def microsoft_login(payload: schemas.MicrosoftLoginRequest, db: Session = Depends(get_db)):
     try:
-        idinfo = verify_google_token(payload.credential)
-    except ValueError as exc:
+        claims = verify_microsoft_token(payload.id_token)
+    except Exception as exc:
         raise HTTPException(status_code=401, detail=str(exc))
-
-    email = idinfo["email"]
-    google_sub = idinfo["sub"]
-    full_name = idinfo.get("name")
-
-    user = db.query(models.User).filter(models.User.google_sub == google_sub).first()
+        
+    email = claims.get("email") or claims.get("preferred_username")
+    ms_sub = claims.get("oid") or claims.get("sub")
+    full_name = claims.get("name")
+    
+    user = db.query(models.User).filter(models.User.google_sub == ms_sub).first()
+    
     if not user:
         user = db.query(models.User).filter(models.User.email == email).first()
-
+        
     if not user:
         user = models.User(
             username=email,
@@ -59,17 +59,18 @@ def google_login(payload: schemas.GoogleLoginRequest, db: Session = Depends(get_
             full_name=full_name,
             role="staff",
             email=email,
-            google_sub=google_sub,
+            google_sub=ms_sub,  # reusing the same column for the Microsoft object ID
         )
         db.add(user)
         db.commit()
         db.refresh(user)
     elif not user.google_sub:
-        user.google_sub = google_sub
+        user.google_sub = ms_sub
         db.commit()
-
+        
     if not user.is_active:
         raise HTTPException(status_code=403, detail="This account has been disabled")
-
+        
     token = create_access_token({"sub": user.username, "role": user.role})
+    
     return schemas.TokenResponse(access_token=token, user=user)

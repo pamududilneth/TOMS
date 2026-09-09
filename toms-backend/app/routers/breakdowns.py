@@ -18,7 +18,11 @@ router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
 #     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "breakdowns"
 # )
 
-UPLOAD_DIR = "/app/uploads/breakdowns"
+# UPLOAD_DIR = "/app/uploads/breakdowns"
+
+UPLOAD_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "breakdowns"
+)
 
 # ---> NEW: Helper function to filter breakdowns by the logged-in user
 def _visible_query(db: Session, current_user: models.User):
@@ -129,7 +133,7 @@ def create_breakdown(
     try:
         append_breakdown_row(row_data)
     except Exception as exc:
-        raise HTTPException(status_code=409, detail=f"Google Sheets Error: {str(exc)}")
+        print(f"[create_breakdown] Google Sheets sync failed (expected until SharePoint migration): {exc}")
 
     return breakdown
 

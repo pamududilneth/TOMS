@@ -174,5 +174,5 @@ class TokenResponse(BaseModel):
     user: UserOut
 
 
-class GoogleLoginRequest(BaseModel):
-    credential: str
+class MicrosoftLoginRequest(BaseModel):
+    id_token: str

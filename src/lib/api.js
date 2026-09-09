@@ -68,23 +68,24 @@ async function login(username, password) {
     return res.json();
 }
 
-// ---> 1. ADDED THE NEW GOOGLE LOGIN FUNCTION HERE <---
-async function loginWithGoogle(credential) {
-    const res = await fetch(`${BASE}/auth/google`, {
+async function loginWithMicrosoft(idToken) {
+    const res = await fetch(`${BASE}/auth/microsoft`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential }),
+        body: JSON.stringify({ id_token: idToken }),
     });
+
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "Google sign-in failed");
+        throw new Error(err.detail || "Microsoft sign-in failed");
     }
+
     return res.json();
 }
 
 export const api = {
     login,
-    loginWithGoogle, // ---> 2. EXPORTED IT HERE <---
+    loginWithMicrosoft,
     getDashboardStats: () => request("/stats/dashboard"),
     getNextRequestId: () => request("/incidents/next-id"),
     listIncidents: () => request("/incidents/"),

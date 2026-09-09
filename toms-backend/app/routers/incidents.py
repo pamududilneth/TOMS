@@ -98,7 +98,7 @@ def create_incident(
     try:
         append_master_incident_row(row_data)
     except Exception as exc:
-        raise HTTPException(status_code=409, detail=f"Google Sheets Error: {str(exc)}")
+        print(f"[create_incident] Google Sheets sync failed (expected until SharePoint migration): {exc}")
 
     if client_ids:
         clients = db.query(models.Client).filter(models.Client.id.in_(client_ids)).all()
@@ -107,8 +107,8 @@ def create_incident(
         for client in clients:
             try:
                 share_incident_with_client(client, incident, db)
-            except RuntimeError as exc:
-                raise HTTPException(status_code=409, detail=str(exc))
+            except Exception as exc:
+                print(f"[create_incident] Client share failed (expected until SharePoint migration): {exc}")
 
     return incident
 
