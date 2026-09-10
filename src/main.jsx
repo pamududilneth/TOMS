@@ -12,6 +12,7 @@ const msalInstance = new PublicClientApplication(msalConfig)
 
 async function startApp() {
   await msalInstance.initialize()
+  await msalInstance.handleRedirectPromise()
 
   createRoot(document.getElementById('root')).render(
     <StrictMode>
@@ -27,4 +28,3 @@ async function startApp() {
 }
 
 startApp()
-

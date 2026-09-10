@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 import { useAuth } from "../../context/AuthContext";
+import { useMsal } from "@azure/msal-react";
 import companyLogo from "../../assets/images/oki-doki-logo.png";
 import {
     FiAlertTriangle,
@@ -16,6 +17,9 @@ function Sidebar() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
+    // MSAL instance for handling Microsoft sessions
+    const { instance, accounts } = useMsal();
+
     // 1. Remove "Clients" from the default menu array so staff won't see it
     const menu = [
         { title: "Stop Management", icon: <FiAlertTriangle />, to: "/stop-management" },
@@ -30,8 +34,18 @@ function Sidebar() {
     }
 
     function handleLogout() {
-        logout();
-        navigate("/login");
+        logout(); // clears your app's own JWT/localStorage session
+
+        if (accounts.length > 0) {
+            // Also clears MSAL's cached Microsoft session, so returning to
+            // /login doesn't silently auto-sign-in again
+            instance.logoutRedirect({
+                account: accounts[0],
+                postLogoutRedirectUri: window.location.origin + "/login",
+            });
+        } else {
+            navigate("/login");
+        }
     }
 
     return (
