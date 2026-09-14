@@ -9,7 +9,10 @@ from .. import models, schemas
 from ..database import get_db
 # ---> UPDATED: Added get_current_user here
 from ..utils.auth import require_admin, get_current_user
-from ..utils.google_sheets_client import append_breakdown_row, delete_breakdown_row
+
+# ---> NEW: Import both local Excel and Google Sheets exporters with aliases to avoid collisions
+from ..utils.breakdown_excel_export import append_breakdown_row as append_breakdown_row_local
+from ..utils.google_sheets_client import append_breakdown_row as append_breakdown_row_sheets, delete_breakdown_row
 
 
 router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
@@ -130,10 +133,16 @@ def create_breakdown(
         breakdown.action_taken,
     ]
 
+    # ---> UPDATED: Writing to local Excel first, then attempting Google Sheets sync
     try:
-        append_breakdown_row(row_data)
+        append_breakdown_row_local(breakdown)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+        
+    try:
+        append_breakdown_row_sheets(row_data)
     except Exception as exc:
-        print(f"[create_breakdown] Google Sheets sync failed (expected until SharePoint migration): {exc}")
+        print(f"[create_breakdown] Google Sheets sync failed: {exc}")
 
     return breakdown
 
@@ -201,18 +210,20 @@ def replace_breakdown_image(
 def delete_breakdown(
     breakdown_id: int,
     db: Session = Depends(get_db),
-    _admin=Depends(require_admin), # Admin only route, already secure!
+    _admin=Depends(require_admin),
 ):
     breakdown = db.query(models.Breakdown).filter(models.Breakdown.id == breakdown_id).first()
     if not breakdown:
         raise HTTPException(status_code=404, detail="Breakdown not found")
 
-    # Capture before deleting from the database
     job_number = breakdown.job_number
 
     db.delete(breakdown)
     db.commit()
 
-    delete_breakdown_row(job_number)
+    try:
+        delete_breakdown_row(job_number)
+    except Exception as exc:
+        print(f"[delete_breakdown] Sheet sync failed: {exc}")
 
     return {"deleted": True}

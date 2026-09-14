@@ -160,8 +160,15 @@ def delete_incident(
     db.delete(incident)
     db.commit()
 
-    delete_master_incident_row(request_id)
+    try:
+        delete_master_incident_row(request_id)
+    except Exception as exc:
+        print(f"[delete_incident] Master sheet sync failed: {exc}")
+
     for client in shared_clients:
-        remove_incident_from_client_sheet(client.name, request_id)
+        try:
+            remove_incident_from_client_sheet(client.name, request_id)
+        except Exception as exc:
+            print(f"[delete_incident] Client sheet sync failed for {client.name}: {exc}")
 
     return {"deleted": True}
