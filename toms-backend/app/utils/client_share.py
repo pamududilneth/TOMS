@@ -5,13 +5,38 @@ from .email_sender import send_report_link_email
 from .google_sheets_client import get_or_create_client_sheet, append_incident_row
 from .google_sheets_client import delete_row_by_value
 
+HEADERS = [
+    "Key",
+    "User",
+    "Reported Date by the Call Centre",
+    "Reported Time by the Call Centre",
+    "Customer",
+    "Vehicle Stop Category",
+    "Job No",
+    "Vehicle No",
+    "Driver Name",
+    "Driver Contact No",
+    "Vehicle Assigned by (Coordinator Name)",
+    "Coordinator Mobile No",
+    "Driver Contacted by OKI DOKI",
+    "Driver Feedback - If Contacted",
+    "Vehicle Parking with Goods",
+    "Vehicle Stopped Location",
+    "Vehicle Stopped Date",
+    "Vehicle Stopped Time",
+    "Vehicle Stopped Date & Time - V2",
+    "Pickup Location",
+    "Via Location/s",
+    "Delivery Location",
+    "Duration",
+]
 
 def _sheet_title(client_name: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9_\- ]", "", client_name).strip()
     return f"TOMS Incidents — {cleaned or 'Client'}"
 
 
-def share_incident_with_client(client, incident, db):
+def share_incident_with_client(client, incident, db, username="", customer_name=""):
     """
     Appends the incident to this client's Google Sheet every time.
     Emails the link only the first time this client is ever shared with,
@@ -20,9 +45,17 @@ def share_incident_with_client(client, incident, db):
     title = _sheet_title(client.name)
 
     sh, share_url = get_or_create_client_sheet(title, client.email)
+    
+    reported_at = incident.created_at or datetime.now()
 
     append_incident_row(title, [
         incident.request_id,
+        username,
+        reported_at.strftime("%Y-%m-%d"),
+        reported_at.strftime("%H:%M"),
+        customer_name,
+        incident.stop_category,
+        incident.job_no,
         incident.vehicle_number,
         incident.driver_name,
         incident.driver_contact_number,
@@ -32,11 +65,13 @@ def share_incident_with_client(client, incident, db):
         incident.driver_feedback,
         "Yes" if incident.vehicle_parked else "No",
         incident.current_parking_location,
-        incident.parked_time,
+        incident.stopped_date,
+        incident.stopped_time,
+        f"{incident.stopped_date} {incident.stopped_time}" if incident.stopped_date else "",
         incident.pickup_location,
         incident.via_locations,
         incident.delivery_location,
-        incident.approver,
+        incident.duration,
     ])
 
     if client.first_shared_at is None:
@@ -44,9 +79,9 @@ def share_incident_with_client(client, incident, db):
 
         if client.email:
             send_report_link_email(
-                to_email=client.email,
-                client_name=client.name,
-                share_link=share_url,
+                to_email=client.email, 
+                client_name=client.name, 
+                share_link=share_url
             )
 
         client.first_shared_at = datetime.now()

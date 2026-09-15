@@ -14,21 +14,29 @@ def _get_client():
 # 1. INCIDENTS LOGIC (Your Working Code)
 # ==========================================
 INCIDENT_HEADERS = [
-    "Request ID",
-    "Vehicle Number",
+    "Key",
+    "User",
+    "Reported Date by the Call Centre",
+    "Reported Time by the Call Centre",
+    "Customer",
+    "Vehicle Stop Category",
+    "Job No",
+    "Vehicle No",
     "Driver Name",
-    "Driver contact number",
-    "Vehicle Assigned Coordinator",
-    "Coordinator mobile number",
-    "Driver Contacted YES/NO",
-    "If contacted driver feedback",
-    "Is the vehicle parked with the goods YES/NO",
-    "Where the vehicle is currently parked",
-    "Parked time",
+    "Driver Contact No",
+    "Vehicle Assigned by (Coordinator Name)",
+    "Coordinator Mobile No",
+    "Driver Contacted by OKI DOKI",
+    "Driver Feedback - If Contacted",
+    "Vehicle Parking with Goods",
+    "Vehicle Stopped Location",
+    "Vehicle Stopped Date",
+    "Vehicle Stopped Time",
+    "Vehicle Stopped Date & Time - V2",
     "Pickup Location",
-    "Via Location/Locations",
+    "Via Location/s",
     "Delivery Location",
-    "Approver",
+    "Duration",
 ]
 
 def get_or_create_client_sheet(sheet_title: str, client_email: str | None):
@@ -41,7 +49,8 @@ def get_or_create_client_sheet(sheet_title: str, client_email: str | None):
         sh = gc.create(sheet_title)
         ws = sh.sheet1
         ws.update("A1", [INCIDENT_HEADERS])
-        ws.format("A1:O1", {"textFormat": {"bold": True}})
+        # ---> UPDATED: Changed from A1:O1 to A1:W1 to accommodate all 23 columns
+        ws.format("A1:W1", {"textFormat": {"bold": True}})
         created = True
 
     if created and client_email:
@@ -217,5 +226,3 @@ def set_column_width(sheet_title: str, column_index: int, width_px: int = 320):
         ]
     }
     sh.batch_update(body)
-
-    

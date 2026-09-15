@@ -10,16 +10,20 @@ class IncidentBase(BaseModel):
     assigned_coordinator: Optional[str] = None
     coordinator_mobile_number: Optional[str] = None
     current_parking_location: Optional[str] = None
-    parked_time: Optional[str] = None
     pickup_location: Optional[str] = None
     via_locations: Optional[str] = None
     delivery_location: Optional[str] = None
     driver_contacted: str = "Yes"
     driver_feedback: Optional[str] = None
     vehicle_parked: bool = False
-    approver: Optional[str] = None
-    client_name: Optional[str] = None
     status: str = "submitted"
+
+    customer_id: Optional[int] = None
+    stop_category: Optional[str] = None
+    job_no: Optional[str] = None
+    stopped_date: Optional[str] = None
+    stopped_time: Optional[str] = None
+    duration: Optional[str] = None
 
 
 class IncidentCreate(IncidentBase):
@@ -33,21 +37,27 @@ class IncidentUpdate(BaseModel):
     assigned_coordinator: Optional[str] = None
     coordinator_mobile_number: Optional[str] = None
     current_parking_location: Optional[str] = None
-    parked_time: Optional[str] = None
     pickup_location: Optional[str] = None
     via_locations: Optional[str] = None
     delivery_location: Optional[str] = None
     driver_contacted: Optional[str] = None
     driver_feedback: Optional[str] = None
     vehicle_parked: Optional[bool] = None
-    approver: Optional[str] = None
-    client_name: Optional[str] = None
     status: Optional[str] = None
+    customer_id: Optional[int] = None
+    stop_category: Optional[str] = None
+    job_no: Optional[str] = None
+    stopped_date: Optional[str] = None
+    stopped_time: Optional[str] = None
+    duration: Optional[str] = None
 
 
 class IncidentOut(IncidentBase):
     id: int
     request_id: str
+    owner_id: Optional[int] = None
+    owner_name: Optional[str] = None
+    customer_name: Optional[str] = None
     created_at: datetime
 
     class Config:

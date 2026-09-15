@@ -35,6 +35,14 @@ class Incident(Base):
     approver = Column(String, nullable=True)
     client_name = Column(String, nullable=True)
 
+    # ---> NEW COLUMNS ADDED HERE
+    customer_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
+    stop_category = Column(String, nullable=True)
+    job_no = Column(String, nullable=True)
+    stopped_date = Column(String, nullable=True)
+    stopped_time = Column(String, nullable=True)
+    duration = Column(String, nullable=True)
+
     status = Column(String, default="submitted")  # draft | submitted
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)

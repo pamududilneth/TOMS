@@ -1,19 +1,27 @@
 const DETAIL_FIELDS = [
-    { key: "request_id", label: "Request ID", width: 130 },
-    { key: "vehicle_number", label: "Vehicle Number", width: 120 },
+    { key: "request_id", label: "Key", width: 100 },
+    { key: "owner_name", label: "User", width: 130 },
+    { key: "reported_date", label: "Reported Date by the Call Centre", width: 150 },
+    { key: "reported_time", label: "Reported Time by the Call Centre", width: 150 },
+    { key: "customer_name", label: "Customer", width: 150 },
+    { key: "stop_category", label: "Vehicle Stop Category", width: 180 },
+    { key: "job_no", label: "Job No", width: 120 },
+    { key: "vehicle_number", label: "Vehicle No", width: 120 },
     { key: "driver_name", label: "Driver Name", width: 140 },
-    { key: "driver_contact_number", label: "Driver contact number", width: 130 },
-    { key: "assigned_coordinator", label: "Vehicle Assigned Coordinator", width: 170 },
-    { key: "coordinator_mobile_number", label: "Coordinator mobile number", width: 150 },
-    { key: "driver_contacted", label: "Driver Contacted YES/NO", width: 150 },
-    { key: "driver_feedback", label: "If contacted driver feedback", width: 220 },
-    { key: "vehicle_parked", label: "Is the vehicle parked with the goods YES/NO", width: 200 },
-    { key: "current_parking_location", label: "Where the vehicle is currently parked", width: 200 },
-    { key: "parked_time", label: "Parked time", width: 150 },
+    { key: "driver_contact_number", label: "Driver Contact No", width: 130 },
+    { key: "assigned_coordinator", label: "Vehicle Assigned by (Coordinator Name)", width: 200 },
+    { key: "coordinator_mobile_number", label: "Coordinator Mobile No", width: 150 },
+    { key: "driver_contacted", label: "Driver Contacted by OKI DOKI", width: 170 },
+    { key: "driver_feedback", label: "Driver Feedback - If Contacted", width: 220 },
+    { key: "vehicle_parked", label: "Vehicle Parking with Goods", width: 170 },
+    { key: "current_parking_location", label: "Vehicle Stopped Location", width: 200 },
+    { key: "stopped_date", label: "Vehicle Stopped Date", width: 150 },
+    { key: "stopped_time", label: "Vehicle Stopped Time", width: 150 },
+    { key: "stopped_datetime_v2", label: "Vehicle Stopped Date & Time - V2", width: 190 },
     { key: "pickup_location", label: "Pickup Location", width: 160 },
-    { key: "via_locations", label: "Via Location/Locations", width: 160 },
+    { key: "via_locations", label: "Via Location/s", width: 160 },
     { key: "delivery_location", label: "Delivery Location", width: 160 },
-    { key: "approver", label: "Approver", width: 130 },
+    { key: "duration", label: "Duration", width: 120 },
 ];
 
 const COLUMNS = DETAIL_FIELDS;
@@ -43,11 +51,15 @@ function escapeHtml(value) {
 
 function formatCell(incident, key) {
     if (key === "vehicle_parked") return incident.vehicle_parked ? "Yes" : "No";
-    if (key === "created_at" && incident.created_at) {
-        return new Date(incident.created_at).toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short",
-        });
+    if (key === "reported_date" && incident.created_at) {
+        return new Date(incident.created_at).toLocaleDateString();
+    }
+    if (key === "reported_time" && incident.created_at) {
+        return new Date(incident.created_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    }
+    if (key === "stopped_datetime_v2") {
+        if (!incident.stopped_date || !incident.stopped_time) return "—";
+        return `${incident.stopped_date} ${incident.stopped_time}`;
     }
     return escapeHtml(incident[key]);
 }

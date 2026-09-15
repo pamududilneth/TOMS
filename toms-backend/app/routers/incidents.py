@@ -15,10 +15,21 @@ router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
 
 def generate_request_id(db: Session) -> str:
-    year = datetime.now().year
-    last_incident = db.query(models.Incident).order_by(models.Incident.id.desc()).first()
-    next_count = (last_incident.id + 1) if last_incident else 1
-    return f"REQ-{year}-{next_count:05d}"
+    count = db.query(models.Incident).count() + 1
+    return f"VSR{count:03d}"
+
+
+def _attach_display_names(incident: models.Incident, db: Session) -> models.Incident:
+    owner = db.query(models.User).filter(models.User.id == incident.owner_id).first()
+    incident.owner_name = (owner.full_name or owner.username) if owner else None
+    
+    if incident.customer_id:
+        customer = db.query(models.Client).filter(models.Client.id == incident.customer_id).first()
+        incident.customer_name = customer.name if customer else None
+    else:
+        incident.customer_name = None
+        
+    return incident
 
 
 def _visible_query(db: Session, current_user: models.User):
@@ -33,7 +44,8 @@ def list_incidents(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    return _visible_query(db, current_user).order_by(models.Incident.id.desc()).all()
+    incidents = _visible_query(db, current_user).order_by(models.Incident.id.desc()).all()
+    return [_attach_display_names(i, db) for i in incidents]
 
 
 @router.get("/next-id")
@@ -73,13 +85,27 @@ def create_incident(
     db.commit()
     db.refresh(incident)
 
+    customer_name = ""
+    if incident.customer_id:
+        customer = db.query(models.Client).filter(models.Client.id == incident.customer_id).first()
+        if customer:
+            customer_name = customer.name
+
+    username = current_user.full_name or current_user.username
+
     try:
-        append_incident_row(incident)
+        append_incident_row(incident, username=username, customer_name=customer_name)
     except RuntimeError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
 
     row_data = [
         incident.request_id,
+        username,
+        incident.created_at.strftime("%Y-%m-%d") if incident.created_at else "",
+        incident.created_at.strftime("%H:%M") if incident.created_at else "",
+        customer_name,
+        incident.stop_category,
+        incident.job_no,
         incident.vehicle_number,
         incident.driver_name,
         incident.driver_contact_number,
@@ -89,16 +115,19 @@ def create_incident(
         incident.driver_feedback,
         "Yes" if incident.vehicle_parked else "No",
         incident.current_parking_location,
-        incident.parked_time,
+        incident.stopped_date,
+        incident.stopped_time,
+        f"{incident.stopped_date} {incident.stopped_time}" if incident.stopped_date else "",
         incident.pickup_location,
         incident.via_locations,
         incident.delivery_location,
-        incident.approver,
+        incident.duration,
     ]
+
     try:
         append_master_incident_row(row_data)
     except Exception as exc:
-        print(f"[create_incident] Google Sheets sync failed (expected until SharePoint migration): {exc}")
+        print(f"[create_incident] Google Sheets sync failed: {exc}")
 
     if client_ids:
         clients = db.query(models.Client).filter(models.Client.id.in_(client_ids)).all()
@@ -106,11 +135,11 @@ def create_incident(
         db.commit()
         for client in clients:
             try:
-                share_incident_with_client(client, incident, db)
+                share_incident_with_client(client, incident, db, username=username, customer_name=customer_name)
             except Exception as exc:
-                print(f"[create_incident] Client share failed (expected until SharePoint migration): {exc}")
+                print(f"[create_incident] Client share failed: {exc}")
 
-    return incident
+    return _attach_display_names(incident, db)
 
 
 @router.get("/{incident_id}", response_model=schemas.IncidentOut)
@@ -122,7 +151,8 @@ def get_incident(
     incident = _visible_query(db, current_user).filter(models.Incident.id == incident_id).first()
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
-    return incident
+    
+    return _attach_display_names(incident, db)
 
 
 @router.patch("/{incident_id}", response_model=schemas.IncidentOut)
@@ -141,7 +171,8 @@ def update_incident(
 
     db.commit()
     db.refresh(incident)
-    return incident
+    
+    return _attach_display_names(incident, db)
 
 
 @router.delete("/{incident_id}")
