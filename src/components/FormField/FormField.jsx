@@ -6,6 +6,7 @@ function FormField({
     type = "text",
     placeholder,
     helper,
+    helperError = false,
     icon,
     options,
     value,
@@ -39,7 +40,7 @@ function FormField({
                 )}
             </div>
 
-            {helper && <span className="field-helper">{helper}</span>}
+            {helper && <span className={`field-helper ${helperError ? "field-helper-error" : ""}`}>{helper}</span>}
         </div>
     );
 }

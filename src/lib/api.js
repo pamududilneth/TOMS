@@ -116,4 +116,8 @@ export const api = {
     replaceBreakdownImage: (id, formData) => requestForm(`/breakdowns/${id}/image`, formData),
     deleteIncident: (id) => request(`/incidents/${id}`, { method: "DELETE" }),
     deleteBreakdown: (id) => request(`/breakdowns/${id}`, { method: "DELETE" }),
+    listStopCategories: () => request("/stop-categories"),
+    listStopCategoriesFull: () => request("/stop-categories/full"),
+    createStopCategory: (data) => request("/stop-categories", { method: "POST", body: JSON.stringify(data) }),
+    deleteStopCategory: (id) => request(`/stop-categories/${id}`, { method: "DELETE" }),
 };

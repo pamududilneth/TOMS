@@ -1,18 +1,14 @@
-.incident-entry-grid {
-    display: grid;
-    grid-template-columns: 2.1fr 1fr;
-    gap: 24px;
+.incident-entry-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     padding: 0 32px 40px;
 }
 
-.form-main,
-.form-side {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-row.form-row-3 {
-    grid-template-columns: repeat(3, 1fr);
+.incident-entry-stack .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
 }
 
 .guideline-box {
@@ -59,14 +55,8 @@
     background: var(--accent-teal);
 }
 
-@media (max-width: 1080px) {
-    .incident-entry-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 640px) {
-    .incident-entry-grid {
-        padding: 0 18px 32px;
+@media (max-width: 900px) {
+    .incident-entry-stack {
+        padding: 0 20px 32px;
     }
 }

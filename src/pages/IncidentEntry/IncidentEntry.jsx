@@ -7,7 +7,6 @@ import FormSection from "../../components/FormSection/FormSection";
 import FormField from "../../components/FormField/FormField";
 import SegmentedToggle from "../../components/SegmentedToggle/SegmentedToggle";
 import ToggleSwitch from "../../components/ToggleSwitch/ToggleSwitch";
-import ClientShareSelect from "../../components/ClientShareSelect/ClientShareSelect";
 import SubmitSuccessModal from "../../components/SubmitSuccessModal/SubmitSuccessModal";
 import { api } from "../../lib/api";
 
@@ -16,17 +15,19 @@ import {
     FiUser,
     FiMapPin,
     FiFileText,
-    FiCheckCircle,
     FiBriefcase
 } from "react-icons/fi";
 
-const STOP_CATEGORIES = [
-    "Unplanned Stops",
-    "Cargo Waiting Destination Access",
-    "Traffic",
-    "Vehicle Breakdown",
-    "Other",
-];
+function validateJobNo(value) {
+    if (!value) return null; // empty is allowed until required elsewhere
+    const prefix = value.slice(0, 3);
+    const isValidPrefix = /^[A-Z]{3}$/.test(prefix);
+    const isValidLength = value.length === 11 || value.length === 13;
+    if (!isValidPrefix || !isValidLength) {
+        return "Incorrect job number";
+    }
+    return null;
+}
 
 const emptyForm = {
     job_no: "",
@@ -55,15 +56,18 @@ function IncidentEntry() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [submittedIncident, setSubmittedIncident] = useState(null);
+    const [jobNoError, setJobNoError] = useState(null);
+    const [stopCategories, setStopCategories] = useState([]);
 
     const [coordinators, setCoordinators] = useState([]);
     const [clients, setClients] = useState([]);
-    const [selectedClientIds, setSelectedClientIds] = useState([]);
 
     useEffect(() => {
         refreshRequestId();
         refreshCoordinators();
         refreshClients();
+
+        api.listStopCategories().then(setStopCategories).catch(() => setStopCategories([]));
     }, []);
 
     function refreshRequestId() {
@@ -98,18 +102,24 @@ function IncidentEntry() {
     }
 
     async function handleSubmit() {
+        const validationError = validateJobNo(form.job_no);
+        if (validationError) {
+            setJobNoError(validationError);
+            setError("Please fix the Job No before submitting.");
+            return;
+        }
+
         setSubmitting(true);
         setError(null);
         try {
             const payload = {
                 ...form,
                 customer_id: form.customer_id ? Number(form.customer_id) : null,
-                client_ids: selectedClientIds,
             };
             const created = await api.createIncident(payload);
             setSubmittedIncident(created);
             setForm(emptyForm);
-            setSelectedClientIds([]);
+            setJobNoError(null);
             refreshRequestId();
             refreshClients();
         } catch (err) {
@@ -121,7 +131,7 @@ function IncidentEntry() {
 
     function handleDiscard() {
         setForm(emptyForm);
-        setSelectedClientIds([]);
+        setJobNoError(null);
         setError(null);
     }
 
@@ -139,176 +149,162 @@ function IncidentEntry() {
 
             {error && <p className="form-error">{error}</p>}
 
-            <div className="incident-entry-grid">
-
-                <div className="form-main">
-
-                    <FormSection icon={<FiBriefcase />} iconColor="blue" title="Job & Customer">
-                        <div className="form-row">
-                            <FormField
-                                label="Key"
-                                value={previewId}
-                                readOnly
-                                helper="System generated unique identifier"
-                            />
-                            <FormField
-                                label="Job No"
-                                placeholder="Enter job number"
-                                value={form.job_no}
-                                onChange={(e) => updateField("job_no", e.target.value)}
-                            />
-                        </div>
-                        <div className="form-row">
-                            <FormField
-                                label="Customer"
-                                type="select"
-                                placeholder="Select customer"
-                                options={clients.map((c) => c.name)}
-                                value={clients.find((c) => c.id === Number(form.customer_id))?.name || ""}
-                                onChange={(e) => {
-                                    const match = clients.find((c) => c.name === e.target.value);
-                                    updateField("customer_id", match ? match.id : "");
-                                }}
-                            />
-                            <FormField
-                                label="Vehicle Stop Category"
-                                type="select"
-                                placeholder="Select category"
-                                options={STOP_CATEGORIES}
-                                value={form.stop_category}
-                                onChange={(e) => updateField("stop_category", e.target.value)}
-                            />
-                        </div>
-                    </FormSection>
-
-                    <FormSection icon={<FiAlertTriangle />} iconColor="red" title="Vehicle Info">
+            <div className="incident-entry-stack">
+                <FormSection icon={<FiBriefcase />} iconColor="blue" title="Job & Customer">
+                    <div className="form-row">
                         <FormField
-                            label="Vehicle No"
-                            required
-                            placeholder="e.g. MH 12 AB 1234"
-                            value={form.vehicle_number}
-                            onChange={(e) => updateField("vehicle_number", e.target.value)}
+                            label="Key"
+                            value={previewId}
+                            readOnly
+                            helper="System generated unique identifier"
                         />
-                    </FormSection>
+                        <FormField
+                            label="Job No"
+                            placeholder="Enter job number"
+                            value={form.job_no}
+                            onChange={(e) => {
+                                const value = e.target.value.toUpperCase();
+                                updateField("job_no", value);
+                                setJobNoError(validateJobNo(value));
+                            }}
+                            helper={jobNoError || "e.g. BRL0000077978 or CFC00091139"}
+                            helperError={!!jobNoError}
+                        />
+                    </div>
+                    <div className="form-row">
+                        <FormField
+                            label="Customer"
+                            type="select"
+                            placeholder="Select customer"
+                            options={clients.map((c) => c.name)}
+                            value={clients.find((c) => c.id === Number(form.customer_id))?.name || ""}
+                            onChange={(e) => {
+                                const match = clients.find((c) => c.name === e.target.value);
+                                updateField("customer_id", match ? match.id : "");
+                            }}
+                        />
+                        <FormField
+                            label="Vehicle Stop Category"
+                            type="select"
+                            placeholder="Select category"
+                            options={stopCategories}
+                            value={form.stop_category}
+                            onChange={(e) => updateField("stop_category", e.target.value)}
+                        />
+                    </div>
+                </FormSection>
 
-                    <FormSection icon={<FiUser />} iconColor="blue" title="Personnel Details">
-                        <div className="form-row">
-                            <FormField
-                                label="Driver Name"
-                                required
-                                placeholder="Enter driver name"
-                                value={form.driver_name}
-                                onChange={(e) => updateField("driver_name", e.target.value)}
-                            />
-                            <FormField
-                                label="Driver Contact No"
-                                required
-                                placeholder="Enter contact number"
-                                value={form.driver_contact_number}
-                                onChange={(e) => updateField("driver_contact_number", e.target.value)}
-                            />
-                        </div>
-                        <div className="form-row">
-                            <FormField
-                                label="Vehicle Assigned by (Coordinator Name)"
-                                type="select"
-                                placeholder="Select Coordinator"
-                                options={coordinators.map((c) => c.name)}
-                                value={form.assigned_coordinator}
-                                onChange={(e) => handleCoordinatorChange(e.target.value)}
-                            />
-                            <FormField
-                                label="Coordinator Mobile No"
-                                value={form.coordinator_mobile_number}
-                                readOnly
-                                helper="Auto-filled from selected coordinator"
-                            />
-                        </div>
-                    </FormSection>
+                <FormSection icon={<FiAlertTriangle />} iconColor="red" title="Vehicle Info">
+                    <FormField
+                        label="Vehicle No"
+                        required
+                        placeholder="e.g. MH 12 AB 1234"
+                        value={form.vehicle_number}
+                        onChange={(e) => updateField("vehicle_number", e.target.value)}
+                    />
+                </FormSection>
 
-                    <FormSection icon={<FiMapPin />} iconColor="violet" title="Stop Details">
-                        <div className="form-row">
-                            <FormField
-                                label="Vehicle Stopped Location"
-                                icon={<FiMapPin />}
-                                placeholder="Search coordinates or address..."
-                                value={form.current_parking_location}
-                                onChange={(e) => updateField("current_parking_location", e.target.value)}
-                            />
-                            <FormField
-                                label="Duration"
-                                placeholder="e.g. 2h 30m"
-                                value={form.duration}
-                                onChange={(e) => updateField("duration", e.target.value)}
-                            />
-                        </div>
-                        <div className="form-row">
-                            <FormField
-                                label="Vehicle Stopped Date"
-                                type="date"
-                                value={form.stopped_date}
-                                onChange={(e) => updateField("stopped_date", e.target.value)}
-                            />
-                            <FormField
-                                label="Vehicle Stopped Time"
-                                type="time"
-                                value={form.stopped_time}
-                                onChange={(e) => updateField("stopped_time", e.target.value)}
-                            />
-                        </div>
-                        <div className="form-row form-row-3">
-                            <FormField
-                                label="Pickup Location"
-                                value={form.pickup_location}
-                                onChange={(e) => updateField("pickup_location", e.target.value)}
-                            />
-                            <FormField
-                                label="Via Location/s"
-                                value={form.via_locations}
-                                onChange={(e) => updateField("via_locations", e.target.value)}
-                            />
-                            <FormField
-                                label="Delivery Location"
-                                value={form.delivery_location}
-                                onChange={(e) => updateField("delivery_location", e.target.value)}
-                            />
-                        </div>
-                    </FormSection>
+                <FormSection icon={<FiUser />} iconColor="blue" title="Personnel Details">
+                    <div className="form-row">
+                        <FormField
+                            label="Driver Name"
+                            required
+                            placeholder="Enter driver name"
+                            value={form.driver_name}
+                            onChange={(e) => updateField("driver_name", e.target.value)}
+                        />
+                        <FormField
+                            label="Driver Contact No"
+                            required
+                            placeholder="Enter contact number"
+                            value={form.driver_contact_number}
+                            onChange={(e) => updateField("driver_contact_number", e.target.value)}
+                        />
+                        <FormField
+                            label="Vehicle Assigned by (Coordinator Name)"
+                            type="select"
+                            placeholder="Select Coordinator"
+                            options={coordinators.map((c) => c.name)}
+                            value={form.assigned_coordinator}
+                            onChange={(e) => handleCoordinatorChange(e.target.value)}
+                        />
+                        <FormField
+                            label="Coordinator Mobile No"
+                            value={form.coordinator_mobile_number}
+                            readOnly
+                            helper="Auto-filled from selected coordinator"
+                        />
+                    </div>
+                </FormSection>
 
-                </div>
+                <FormSection icon={<FiMapPin />} iconColor="violet" title="Stop Details">
+                    <div className="form-row">
+                        <FormField
+                            label="Vehicle Stopped Location"
+                            icon={<FiMapPin />}
+                            placeholder="Search coordinates or address..."
+                            value={form.current_parking_location}
+                            onChange={(e) => updateField("current_parking_location", e.target.value)}
+                        />
+                        <FormField
+                            label="Duration"
+                            placeholder="e.g. 2h 30m"
+                            value={form.duration}
+                            onChange={(e) => updateField("duration", e.target.value)}
+                        />
+                        <FormField
+                            label="Vehicle Stopped Date"
+                            type="date"
+                            value={form.stopped_date}
+                            onChange={(e) => updateField("stopped_date", e.target.value)}
+                        />
+                        <FormField
+                            label="Vehicle Stopped Time"
+                            type="time"
+                            value={form.stopped_time}
+                            onChange={(e) => updateField("stopped_time", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-row form-row-3">
+                        <FormField
+                            label="Pickup Location"
+                            value={form.pickup_location}
+                            onChange={(e) => updateField("pickup_location", e.target.value)}
+                        />
+                        <FormField
+                            label="Via Location/s"
+                            value={form.via_locations}
+                            onChange={(e) => updateField("via_locations", e.target.value)}
+                        />
+                        <FormField
+                            label="Delivery Location"
+                            value={form.delivery_location}
+                            onChange={(e) => updateField("delivery_location", e.target.value)}
+                        />
+                    </div>
+                </FormSection>
 
-                <div className="form-side">
-
-                    <FormSection icon={<FiFileText />} iconColor="blue" title="Status & Feedback">
+                <FormSection icon={<FiFileText />} iconColor="blue" title="Status & Feedback">
+                    <div className="form-row">
                         <SegmentedToggle
                             label="Driver Contacted by OKI DOKI"
                             options={["Yes", "No"]}
                             value={form.driver_contacted}
                             onChange={(val) => updateField("driver_contacted", val)}
                         />
-                        <FormField
-                            label="Driver Feedback - If Contacted"
-                            type="textarea"
-                            value={form.driver_feedback}
-                            onChange={(e) => updateField("driver_feedback", e.target.value)}
-                        />
                         <ToggleSwitch
                             label="Vehicle Parking with Goods"
                             checked={form.vehicle_parked}
                             onChange={(val) => updateField("vehicle_parked", val)}
                         />
-                    </FormSection>
-
-                    <FormSection icon={<FiCheckCircle />} iconColor="green" title="Reporting">
-                        <ClientShareSelect
-                            clients={clients}
-                            selectedIds={selectedClientIds}
-                            onChange={setSelectedClientIds}
-                        />
-                    </FormSection>
-
-                </div>
-
+                    </div>
+                    <FormField
+                        label="Driver Feedback - If Contacted"
+                        type="textarea"
+                        value={form.driver_feedback}
+                        onChange={(e) => updateField("driver_feedback", e.target.value)}
+                    />
+                </FormSection>
             </div>
 
             <SubmitSuccessModal

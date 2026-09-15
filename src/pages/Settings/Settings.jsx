@@ -9,6 +9,7 @@ import { api } from "../../lib/api";
 function Settings() {
     const [coordinators, setCoordinators] = useState([]);
     const [clients, setClients] = useState([]);
+    const [stopCategories, setStopCategories] = useState([]);
 
     function loadCoordinators() {
         api.listCoordinatorsFull().then(setCoordinators).catch(() => setCoordinators([]));
@@ -18,9 +19,14 @@ function Settings() {
         api.listClientsFull().then(setClients).catch(() => setClients([]));
     }
 
+    function loadStopCategories() {
+        api.listStopCategoriesFull().then(setStopCategories).catch(() => setStopCategories([]));
+    }
+
     useEffect(() => {
         loadCoordinators();
         loadClients();
+        loadStopCategories();
     }, []);
 
     async function handleAddCoordinator(values) {
@@ -47,6 +53,16 @@ function Settings() {
     async function handleDeleteClient(id) {
         await api.deleteClient(id);
         loadClients();
+    }
+
+    async function handleAddStopCategory(values) {
+        await api.createStopCategory({ name: values.name });
+        loadStopCategories();
+    }
+
+    async function handleDeleteStopCategory(id) {
+        await api.deleteStopCategory(id);
+        loadStopCategories();
     }
 
     return (
@@ -84,6 +100,15 @@ function Settings() {
                         { key: "name", placeholder: "Client name", required: true },
                         { key: "email", placeholder: "Email (for report sharing)", type: "email" },
                     ]}
+                />
+
+                <SettingsTable
+                    title="Vehicle Stop Categories"
+                    columns={[{ key: "name", label: "Name" }]}
+                    rows={stopCategories}
+                    onAdd={handleAddStopCategory}
+                    onDelete={handleDeleteStopCategory}
+                    addFields={[{ key: "name", placeholder: "Category name", required: true }]}
                 />
 
             </div>

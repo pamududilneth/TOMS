@@ -148,6 +148,17 @@ class BreakdownOut(BreakdownBase):
     class Config:
         from_attributes = True
 
+class StopCategoryCreate(BaseModel):
+    name: str
+
+
+class StopCategoryOut(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
 
 class UserLogin(BaseModel):
     username: str

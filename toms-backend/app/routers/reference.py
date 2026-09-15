@@ -88,3 +88,36 @@ def delete_coordinator(coordinator_id: int, db: Session = Depends(get_db), _admi
     db.delete(coordinator)
     db.commit()
     return {"deleted": True}
+
+
+@router.get("/stop-categories")
+def list_stop_categories(db: Session = Depends(get_db)):
+    return [c.name for c in db.query(models.StopCategory).order_by(models.StopCategory.name).all()]
+
+
+@router.get("/stop-categories/full", response_model=list[schemas.StopCategoryOut])
+def list_stop_categories_full(db: Session = Depends(get_db)):
+    return db.query(models.StopCategory).order_by(models.StopCategory.name).all()
+
+
+@router.post("/stop-categories", response_model=schemas.StopCategoryOut)
+def create_stop_category(payload: schemas.StopCategoryCreate, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    existing = db.query(models.StopCategory).filter(models.StopCategory.name == payload.name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Category already exists")
+
+    category = models.StopCategory(name=payload.name)
+    db.add(category)
+    db.commit()
+    db.refresh(category)
+    return category
+
+
+@router.delete("/stop-categories/{category_id}")
+def delete_stop_category(category_id: int, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    category = db.query(models.StopCategory).filter(models.StopCategory.id == category_id).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    db.delete(category)
+    db.commit()
+    return {"deleted": True}

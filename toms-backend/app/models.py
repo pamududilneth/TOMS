@@ -99,6 +99,12 @@ class Breakdown(Base):
 
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
+class StopCategory(Base):
+    __tablename__ = "stop_categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+
 class User(Base):
     __tablename__ = "users"
 
