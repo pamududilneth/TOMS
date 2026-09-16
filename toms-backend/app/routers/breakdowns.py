@@ -17,12 +17,6 @@ from ..utils.google_sheets_client import append_breakdown_row as append_breakdow
 
 router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
 
-# UPLOAD_DIR = os.path.join(
-#     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "breakdowns"
-# )
-
-# UPLOAD_DIR = "/app/uploads/breakdowns"
-
 UPLOAD_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "uploads", "breakdowns"
 )
@@ -85,21 +79,8 @@ def create_breakdown(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user), # ---> UPDATED
 ):
-    job_number = generate_job_number(db)
-
-    image_filename = None
-    dest_path = None
-    if image and image.filename:
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        ext = os.path.splitext(image.filename)[1]
-        image_filename = f"{job_number}{ext}"
-        dest_path = os.path.join(UPLOAD_DIR, image_filename)
-        with open(dest_path, "wb") as f:
-            shutil.copyfileobj(image.file, f)
-
     breakdown = models.Breakdown(
-        job_number=job_number,
-        owner_id=current_user.id, # ---> UPDATED: Tagging the breakdown to this user
+        owner_id=current_user.id,
         vehicle_number=vehicle_number,
         requesting_plant=requesting_plant,
         pickup_location=pickup_location,
@@ -111,10 +92,39 @@ def create_breakdown(
         reason=reason,
         action_taken=action_taken,
         priority=priority,
-        image_filename=image_filename,
         status="submitted",
     )
+    
     db.add(breakdown)
+    db.flush()  # Assigns breakdown.id without committing the transaction yet
+
+    # Now that we have the exact ID, securely generate the job number
+    year = datetime.now().year
+    job_number = f"JOB-{year}-{breakdown.id:04d}"
+    breakdown.job_number = job_number
+
+    image_filename = None
+    dest_path = None
+    if image and image.filename:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        ext = os.path.splitext(image.filename)[1]
+        image_filename = f"{job_number}{ext}"
+        dest_path = os.path.join(UPLOAD_DIR, image_filename)
+        with open(dest_path, "wb") as f:
+            shutil.copyfileobj(image.file, f)
+            
+        breakdown.image_filename = image_filename
+
+    # ---> UPDATED: Attempting local Excel sync BEFORE committing
+    try:
+        append_breakdown_row_local(breakdown)
+    except RuntimeError as exc:
+        db.rollback()  # Undo the flush — nothing gets saved to DB
+        # Clean up the image off the disk if we abort
+        if dest_path and os.path.exists(dest_path):
+            os.remove(dest_path)
+        raise HTTPException(status_code=409, detail=str(exc))
+        
     db.commit()
     db.refresh(breakdown)
 
@@ -133,18 +143,13 @@ def create_breakdown(
         breakdown.action_taken,
     ]
 
-    # ---> UPDATED: Writing to local Excel first, then attempting Google Sheets sync
-    try:
-        append_breakdown_row_local(breakdown)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=409, detail=str(exc))
-        
     try:
         append_breakdown_row_sheets(row_data)
     except Exception as exc:
         print(f"[create_breakdown] Google Sheets sync failed: {exc}")
 
     return breakdown
+
 
 # ── Dynamic routes stay LAST ──
 

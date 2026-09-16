@@ -76,28 +76,35 @@ def create_incident(
     data = payload.model_dump()
     client_ids = data.pop("client_ids", [])
 
-    incident = models.Incident(
-        request_id=generate_request_id(db),
-        owner_id=current_user.id,
-        **data,
-    )
-    db.add(incident)
-    db.commit()
-    db.refresh(incident)
-
+    # We must resolve these names before hitting Excel so the 23-column export works
     customer_name = ""
-    if incident.customer_id:
-        customer = db.query(models.Client).filter(models.Client.id == incident.customer_id).first()
+    if data.get("customer_id"):
+        customer = db.query(models.Client).filter(models.Client.id == data["customer_id"]).first()
         if customer:
             customer_name = customer.name
 
     username = current_user.full_name or current_user.username
 
+    incident = models.Incident(
+        owner_id=current_user.id,
+        **data,
+    )
+    
+    db.add(incident)
+    db.flush()  # Assigns incident.id without committing the transaction yet
+    
+    incident.request_id = f"VSR{incident.id:03d}"
+
     try:
         append_incident_row(incident, username=username, customer_name=customer_name)
     except RuntimeError as exc:
+        db.rollback()  # Undo the flush — nothing gets saved to the DB if Excel fails
         raise HTTPException(status_code=409, detail=str(exc))
 
+    db.commit()
+    db.refresh(incident)
+
+    # Everything below only runs after both DB + Excel succeeded
     row_data = [
         incident.request_id,
         username,
