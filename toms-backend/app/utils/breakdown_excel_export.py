@@ -1,40 +1,57 @@
 import os
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
-from openpyxl.drawing.image import Image as XLImage
-from openpyxl.utils import get_column_letter
 
-# Reverted to local Downloads folder
 EXCEL_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
 EXCEL_PATH = os.path.join(EXCEL_DIR, "breakdowns.xlsx")
 
-# Ensure this path matches the local UPLOAD_DIR in app/routers/breakdowns.py
-UPLOAD_DIR = os.path.join(os.path.expanduser("~"), "Downloads", "toms_uploads", "breakdowns")
-
 HEADERS = [
-    "Job Number",
-    "Vehicle Number",
-    "Requesting Plant",
-    "Pickup Location",
-    "Via Location",
-    "Delivery Location",
-    "Incident Type",
-    "Incident Date & Time",
-    "Breakdown/Accident Location",
-    "Reason",
-    "Image Filename",
-    "Monitoring Center Action",
-    "Priority",
+    "Record ID",
+    "Data Entered by",
+    "Incident Date/Time",
+    "Incident Month",
+    "Reported Date/Time to the Compliance Team",
+    "Reported Month",
+    "Time for Reporting",
+    "Job No",
+    "Incident Reference No by Compliance Team",
+    "Customer",
+    "Vehicle No",
+    "Driver",
+    "Supplier",
+    "Category",
+    "Category Detail",
+    "Injury Category",
+    "Route Cause",
+    "Shipment Content (Goods)",
+    "Third Party Life",
+    "Driver/Assistant Life",
+    "Vehicle",
+    "Third Party Property",
+    "Delivery on Time",
+    "Combined Result",
+    "Severity Level",
+    "Severity Classification",
+    "Involvement of Police",
+    "Legal Impact",
+    "Customer Claim",
+    "Other Cost",
+    "Financial Impact",
+    "Action",
+    "Action Taken Date",
+    "Remark",
     "Status",
-    "Submitted At",
-    "Image Preview",  # new — actual embedded picture goes here
+    "Action Closing Date",
+    "Time for Action Closing",
+    "Applicability of Correction",
+    "Correction",
+    "Applicability of Corrective Action",
+    "Corrective Action",
+    "Responsible Person for Corrective Action",
+    "Target Date for Corrective Action",
+    "Target Month for Corrective Action",
+    "Status for Corrective Action",
 ]
-
-IMAGE_COL_INDEX = len(HEADERS)  # 1-based column position of "Image Preview"
-IMAGE_COL_LETTER = get_column_letter(IMAGE_COL_INDEX)
-
-THUMB_WIDTH_PX = 160
-THUMB_HEIGHT_PX = 110
 
 
 def _ensure_workbook():
@@ -44,31 +61,20 @@ def _ensure_workbook():
         ws = wb.active
         ws.title = "Breakdowns"
         ws.append(HEADERS)
-        ws.column_dimensions[IMAGE_COL_LETTER].width = 24
         wb.save(EXCEL_PATH)
 
 
-def _embed_image(ws, row_number: int, image_filename: str):
-    image_path = os.path.join(UPLOAD_DIR, image_filename)
-    if not os.path.exists(image_path):
-        return
-
-    try:
-        img = XLImage(image_path)
-        img.width = THUMB_WIDTH_PX
-        img.height = THUMB_HEIGHT_PX
-        ws.add_image(img, f"{IMAGE_COL_LETTER}{row_number}")
-
-        # Make the row tall enough to actually show the thumbnail
-        # (Excel row height is in points; ~0.75 points per pixel)
-        ws.row_dimensions[row_number].height = THUMB_HEIGHT_PX * 0.75
-    except Exception:
-        # If the image is corrupt/unsupported, don't block the whole submission —
-        # the row still gets saved with just the filename as before.
-        pass
-
-
-def append_breakdown_row(breakdown):
+def append_breakdown_row(
+    breakdown,
+    username: str,
+    customer_name: str,
+    supplier_name: str,
+    incident_dt,
+    reported_dt,
+    incident_month: str,
+    reported_month: str,
+    time_for_reporting: str,
+):
     _ensure_workbook()
 
     try:
@@ -76,29 +82,37 @@ def append_breakdown_row(breakdown):
         ws = wb["Breakdowns"]
 
         ws.append([
-            breakdown.job_number,
-            breakdown.vehicle_number,
-            breakdown.requesting_plant,
-            breakdown.pickup_location,
-            breakdown.via_location,
-            breakdown.delivery_location,
-            breakdown.incident_type,
-            breakdown.incident_datetime,
-            breakdown.location,
-            breakdown.reason,
-            breakdown.image_filename,
-            breakdown.action_taken,
-            breakdown.priority,
-            breakdown.status,
-            breakdown.created_at.strftime("%Y-%m-%d %H:%M:%S")
-            if breakdown.created_at else datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "",  # Image Preview column stays text-empty; picture is layered on top
+            breakdown.job_number,               # Record ID
+            username,                           # Data Entered by
+            incident_dt,                        # Incident Date/Time (real datetime object)
+            incident_month,                     # Incident Month
+            reported_dt,                        # Reported Date/Time to the Compliance Team (real datetime object)
+            reported_month,                     # Reported Month
+            time_for_reporting,                 # Time for Reporting
+            breakdown.job_no,                   # Job No
+            "",                                 # Incident Reference No by Compliance Team (manual)
+            customer_name,                      # Customer
+            breakdown.vehicle_number,           # Vehicle No
+            breakdown.driver,                   # Driver
+            supplier_name,                      # Supplier
+            breakdown.category,                 # Category
+            breakdown.category_detail,          # Category Detail
+            breakdown.injury_category,          # Injury Category
+            breakdown.root_cause,               # Route Cause
+            breakdown.shipment_content,         # Shipment Content (Goods)
+            breakdown.third_party_life,         # Third Party Life
+            breakdown.driver_assistant_life,    # Driver/Assistant Life
+            breakdown.vehicle_impact,           # Vehicle
+            breakdown.third_party_property,     # Third Party Property
+            breakdown.delivery_on_time,         # Delivery on Time
+            "TBA",                              # Combined Result (manual)
+            "TBA",                              # Severity Level (manual)
+            "TBA",                              # Severity Classification (manual)
+            breakdown.involvement_of_police,    # Involvement of Police
+            breakdown.legal_impact,             # Legal Impact
+            "", "", "", "", "", "", "", "", "",  # Customer Claim ... Action Closing Date
+            "", "", "", "", "", "", "", "",      # Time for Action Closing ... Status for Corrective Action
         ])
-
-        row_number = ws.max_row
-
-        if breakdown.image_filename:
-            _embed_image(ws, row_number, breakdown.image_filename)
 
         wb.save(EXCEL_PATH)
 

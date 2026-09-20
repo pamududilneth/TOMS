@@ -1,40 +1,57 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../Breakdowns/Breakdowns.css";
+import "../IncidentEntry/IncidentEntry.css";
 
 import Topbar from "../../components/Topbar/Topbar";
 import PageToolbar from "../../components/PageToolbar/PageToolbar";
 import FormSection from "../../components/FormSection/FormSection";
 import FormField from "../../components/FormField/FormField";
-import SegmentedToggle from "../../components/SegmentedToggle/SegmentedToggle";
-import ImageUploadField from "../../components/ImageUploadField/ImageUploadField";
+import SearchableSelect from "../../components/SearchableSelect/SearchableSelect";
 import { api } from "../../lib/api";
 
-import {
-    FiBriefcase,
-    FiNavigation,
-    FiAlertTriangle,
-    FiCamera,
-    FiCheckSquare
-} from "react-icons/fi";
+import { FiAlertTriangle, FiBriefcase, FiUsers } from "react-icons/fi";
 
+const CATEGORY_OPTIONS = ["Accident", "Incident", "Breakdown", "Investigation", "Police Checking"];
+const INJURY_OPTIONS = ["No injury", "First-aid", "Hospital treatment", "Disability-Temporary", "Disability-Permanent", "Fatal"];
+const ROOT_CAUSE_OPTIONS = ["Driver issue", "Peak time", "Road condition", "Third party issue", "Traffic", "Vehicle issue", "Weather condition"];
+const AFFECTED_OPTIONS = ["Affected", "Not affected"];
+const VEHICLE_OPTIONS = ["Affected", "Not affected", "Need a backup team /vehicle"];
+const DELIVERY_OPTIONS = ["Can meet", "Cannot meet"];
+const YES_NO_OPTIONS = ["Yes", "No"];
 const STATUS_OPTIONS = ["submitted", "in_progress", "resolved"];
+
+function validateJobNo(value) {
+    if (!value) return null;
+    const prefix = value.slice(0, 3);
+    const isValidPrefix = /^[A-Z]{3}$/.test(prefix);
+    const isValidLength = value.length === 11 || value.length === 13;
+    if (!isValidPrefix || !isValidLength) return "Incorrect job number";
+    return null;
+}
 
 function EditBreakdown() {
     const { id } = useParams();
     const navigate = useNavigate();
 
     const [form, setForm] = useState(null);
-    const [newImageFile, setNewImageFile] = useState(null);
+    const [clients, setClients] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
+    const [jobNoError, setJobNoError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         api.getBreakdown(id)
-            .then(setForm)
+            .then((data) => {
+                setForm(data);
+                setJobNoError(validateJobNo(data.job_no || ""));
+            })
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
+
+        api.listClientsFull().then(setClients).catch(() => setClients([]));
+        api.listSuppliersFull().then(setSuppliers).catch(() => setSuppliers([]));
     }, [id]);
 
     function updateField(name, value) {
@@ -42,30 +59,37 @@ function EditBreakdown() {
     }
 
     async function handleSubmit() {
+        const validationError = validateJobNo(form.job_no);
+        if (validationError) {
+            setJobNoError(validationError);
+            setError("Please fix the Job No before saving.");
+            return;
+        }
+
         setSubmitting(true);
         setError(null);
         try {
             await api.updateBreakdown(id, {
-                vehicle_number: form.vehicle_number,
-                requesting_plant: form.requesting_plant,
-                pickup_location: form.pickup_location,
-                via_location: form.via_location,
-                delivery_location: form.delivery_location,
-                incident_type: form.incident_type,
                 incident_datetime: form.incident_datetime,
-                location: form.location,
-                reason: form.reason,
-                action_taken: form.action_taken,
-                priority: form.priority,
+                job_no: form.job_no,
+                customer_id: form.customer_id ? Number(form.customer_id) : null,
+                vehicle_number: form.vehicle_number,
+                driver: form.driver,
+                supplier_id: form.supplier_id ? Number(form.supplier_id) : null,
+                category: form.category,
+                category_detail: form.category_detail,
+                injury_category: form.injury_category,
+                root_cause: form.root_cause,
+                shipment_content: form.shipment_content,
+                third_party_life: form.third_party_life,
+                driver_assistant_life: form.driver_assistant_life,
+                vehicle_impact: form.vehicle_impact,
+                third_party_property: form.third_party_property,
+                delivery_on_time: form.delivery_on_time,
+                involvement_of_police: form.involvement_of_police,
+                legal_impact: form.legal_impact,
                 status: form.status,
             });
-
-            if (newImageFile) {
-                const formData = new FormData();
-                formData.append("image", newImageFile);
-                await api.replaceBreakdownImage(id, formData);
-            }
-
             navigate("/reports");
         } catch (err) {
             setError(err.message);
@@ -94,13 +118,15 @@ function EditBreakdown() {
         );
     }
 
+    const isAccident = form.category === "Accident";
+
     return (
         <>
             <Topbar title="Operations Dashboard" />
 
             <PageToolbar
-                crumbs={["Operational Control", "Vehicle Breakdown Management", form.job_number]}
-                subtitle="Edit Breakdown"
+                crumbs={["Operational Control", "Breakdowns/Accident", form.job_number]}
+                subtitle="Edit Breakdown/Accident"
                 onDiscard={() => navigate("/reports")}
                 onSubmit={handleSubmit}
                 submitting={submitting}
@@ -111,116 +137,162 @@ function EditBreakdown() {
 
             {error && <p className="form-error">{error}</p>}
 
-            <div className="breakdowns-grid">
+            <div className="incident-entry-stack">
 
-                <div className="breakdowns-col">
+                <FormSection icon={<FiBriefcase />} iconColor="blue" title="Job Details">
+                    <div className="form-row">
+                        <FormField label="Record ID" value={form.job_number} readOnly />
+                        <FormField
+                            label="Job No"
+                            value={form.job_no || ""}
+                            onChange={(e) => {
+                                const value = e.target.value.toUpperCase();
+                                updateField("job_no", value);
+                                setJobNoError(validateJobNo(value));
+                            }}
+                            helper={jobNoError || "e.g. BRL0000077978 or CFC00091139"}
+                            helperError={!!jobNoError}
+                        />
+                        <FormField
+                            label="Incident Date/Time"
+                            type="datetime-local"
+                            value={form.incident_datetime || ""}
+                            onChange={(e) => updateField("incident_datetime", e.target.value)}
+                        />
+                    </div>
+                    <div className="form-row">
+                        <SearchableSelect
+                            label="Customer"
+                            placeholder="Select customer"
+                            options={clients.map((c) => c.name)}
+                            value={clients.find((c) => c.id === Number(form.customer_id))?.name || ""}
+                            onChange={(name) => {
+                                const match = clients.find((c) => c.name === name);
+                                updateField("customer_id", match ? match.id : "");
+                            }}
+                        />
+                        <FormField
+                            label="Vehicle No"
+                            required
+                            value={form.vehicle_number}
+                            onChange={(e) => updateField("vehicle_number", e.target.value)}
+                        />
+                        <FormField
+                            label="Driver"
+                            value={form.driver || ""}
+                            onChange={(e) => updateField("driver", e.target.value)}
+                        />
+                    </div>
+                </FormSection>
 
-                    <FormSection icon={<FiBriefcase />} iconColor="blue" title="Logistic Details">
-                        <div className="form-row">
-                            <FormField
-                                label="Job Number"
-                                value={form.job_number}
-                                readOnly
-                                helper="System generated unique identifier"
+                <FormSection icon={<FiUsers />} iconColor="violet" title="Supplier & Category">
+                    <div className="form-row">
+                        <SearchableSelect
+                            label="Supplier"
+                            placeholder="Select supplier"
+                            options={suppliers.map((s) => s.name)}
+                            value={suppliers.find((s) => s.id === Number(form.supplier_id))?.name || ""}
+                            onChange={(name) => {
+                                const match = suppliers.find((s) => s.name === name);
+                                updateField("supplier_id", match ? match.id : "");
+                            }}
+                        />
+                        <SearchableSelect
+                            label="Category"
+                            placeholder="Select category"
+                            options={CATEGORY_OPTIONS}
+                            value={form.category || ""}
+                            onChange={(val) => updateField("category", val)}
+                        />
+                        {isAccident && (
+                            <SearchableSelect
+                                label="Injury Category"
+                                placeholder="Select injury category"
+                                options={INJURY_OPTIONS}
+                                value={form.injury_category || ""}
+                                onChange={(val) => updateField("injury_category", val)}
                             />
-                            <FormField
-                                label="Vehicle Number"
-                                required
-                                value={form.vehicle_number}
-                                onChange={(e) => updateField("vehicle_number", e.target.value)}
-                            />
-                        </div>
-                        <FormField
-                            label="Requesting Plant"
-                            value={form.requesting_plant || ""}
-                            onChange={(e) => updateField("requesting_plant", e.target.value)}
-                        />
-                    </FormSection>
-
-                    <FormSection icon={<FiAlertTriangle />} iconColor="red" title="Incident Details">
-                        <SegmentedToggle
-                            label="Incident Type"
-                            options={["Breakdown", "Accident"]}
-                            value={form.incident_type}
-                            onChange={(val) => updateField("incident_type", val)}
-                        />
-                        <div className="form-row">
-                            <FormField
-                                label="Incident Date & Time"
-                                type="datetime-local"
-                                value={form.incident_datetime || ""}
-                                onChange={(e) => updateField("incident_datetime", e.target.value)}
-                            />
-                            <FormField
-                                label="Location"
-                                value={form.location || ""}
-                                onChange={(e) => updateField("location", e.target.value)}
-                            />
-                        </div>
-                        <FormField
-                            label="Reason / Incident Description"
-                            type="textarea"
-                            value={form.reason || ""}
-                            onChange={(e) => updateField("reason", e.target.value)}
-                        />
-                    </FormSection>
-
-                </div>
-
-                <div className="breakdowns-col">
-
-                    <FormSection icon={<FiNavigation />} iconColor="violet" title="Route Information">
-                        <FormField
-                            label="Pickup Location"
-                            value={form.pickup_location || ""}
-                            onChange={(e) => updateField("pickup_location", e.target.value)}
-                        />
-                        <FormField
-                            label="Via Location"
-                            value={form.via_location || ""}
-                            onChange={(e) => updateField("via_location", e.target.value)}
-                        />
-                        <FormField
-                            label="Delivery Location"
-                            value={form.delivery_location || ""}
-                            onChange={(e) => updateField("delivery_location", e.target.value)}
-                        />
-                    </FormSection>
-
-                    <FormSection icon={<FiCamera />} iconColor="blue" title="Visual Evidence">
-                        {form.image_filename && !newImageFile && (
-                            <div className="edit-current-image">
-                                <span className="edit-current-image-label">Current image:</span>
-                                <img
-                                    src={`/api/breakdowns/uploads/${form.image_filename}`}
-                                    alt="Current breakdown site"
-                                />
-                            </div>
                         )}
-                        <ImageUploadField
-                            label={form.image_filename ? "Replace image (optional)" : "Image of the breakdown place"}
-                            onFileSelected={setNewImageFile}
-                        />
-                    </FormSection>
+                    </div>
+                    <FormField
+                        label="Category Detail"
+                        type="textarea"
+                        value={form.category_detail || ""}
+                        onChange={(e) => updateField("category_detail", e.target.value)}
+                    />
+                </FormSection>
 
-                    <FormSection icon={<FiCheckSquare />} iconColor="green" title="Monitoring Center Action">
-                        <FormField
-                            label="Action Taken / Resolution Notes"
-                            type="textarea"
-                            value={form.action_taken || ""}
-                            onChange={(e) => updateField("action_taken", e.target.value)}
+                <FormSection icon={<FiAlertTriangle />} iconColor="red" title="Impact Assessment">
+                    <div className="form-row">
+                        <SearchableSelect
+                            label="Route Cause"
+                            options={ROOT_CAUSE_OPTIONS}
+                            value={form.root_cause || ""}
+                            onChange={(val) => updateField("root_cause", val)}
                         />
-                        <FormField
-                            label="Status"
-                            type="select"
-                            placeholder="Select status"
-                            options={STATUS_OPTIONS}
-                            value={form.status}
-                            onChange={(e) => updateField("status", e.target.value)}
+                        <SearchableSelect
+                            label="Shipment Content (Goods)"
+                            options={AFFECTED_OPTIONS}
+                            value={form.shipment_content || ""}
+                            onChange={(val) => updateField("shipment_content", val)}
                         />
-                    </FormSection>
+                        <SearchableSelect
+                            label="Third Party Life"
+                            options={AFFECTED_OPTIONS}
+                            value={form.third_party_life || ""}
+                            onChange={(val) => updateField("third_party_life", val)}
+                        />
+                        <SearchableSelect
+                            label="Driver/Assistant Life"
+                            options={AFFECTED_OPTIONS}
+                            value={form.driver_assistant_life || ""}
+                            onChange={(val) => updateField("driver_assistant_life", val)}
+                        />
+                    </div>
+                    <div className="form-row">
+                        <SearchableSelect
+                            label="Vehicle"
+                            options={VEHICLE_OPTIONS}
+                            value={form.vehicle_impact || ""}
+                            onChange={(val) => updateField("vehicle_impact", val)}
+                        />
+                        <SearchableSelect
+                            label="Third Party Property"
+                            options={AFFECTED_OPTIONS}
+                            value={form.third_party_property || ""}
+                            onChange={(val) => updateField("third_party_property", val)}
+                        />
+                        <SearchableSelect
+                            label="Delivery on Time"
+                            options={DELIVERY_OPTIONS}
+                            value={form.delivery_on_time || ""}
+                            onChange={(val) => updateField("delivery_on_time", val)}
+                        />
+                        <SearchableSelect
+                            label="Involvement of Police"
+                            options={YES_NO_OPTIONS}
+                            value={form.involvement_of_police || ""}
+                            onChange={(val) => updateField("involvement_of_police", val)}
+                        />
+                        <SearchableSelect
+                            label="Legal Impact"
+                            options={YES_NO_OPTIONS}
+                            value={form.legal_impact || ""}
+                            onChange={(val) => updateField("legal_impact", val)}
+                        />
+                    </div>
+                </FormSection>
 
-                </div>
+                <FormSection icon={<FiBriefcase />} iconColor="green" title="Status">
+                    <FormField
+                        label="Status"
+                        type="select"
+                        placeholder="Select status"
+                        options={STATUS_OPTIONS}
+                        value={form.status}
+                        onChange={(e) => updateField("status", e.target.value)}
+                    />
+                </FormSection>
 
             </div>
         </>

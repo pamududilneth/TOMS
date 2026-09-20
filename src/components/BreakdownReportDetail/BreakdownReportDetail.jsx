@@ -5,9 +5,7 @@ import { buildSingleBreakdownTableHTML } from "../../utils/reportTable";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
-import { copyBreakdownTableToClipboard } from "../../utils/clipboardCopy";
-import { FiPrinter, FiDownload, FiCopy, FiEdit2, FiTrash2, FiBriefcase, FiNavigation, FiAlertTriangle, FiCheckSquare, FiTruck } from "react-icons/fi";
-
+import { FiPrinter, FiDownload, FiCopy, FiEdit2, FiTrash2, FiBriefcase, FiAlertTriangle, FiCheckSquare, FiTruck } from "react-icons/fi";
 
 
 function formatDateTime(value) {
@@ -33,28 +31,8 @@ function BreakdownReportDetail({ breakdown, onDeleted }) {
     }
 
     async function handleDownloadHtml() {
-        let imageDataUrl = null;
-
-        if (breakdown.image_filename) {
-            try {
-                const res = await fetch(`/api/breakdowns/uploads/${breakdown.image_filename}`);
-                if (res.ok) {
-                    const blob = await res.blob();
-                    imageDataUrl = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(blob);
-                    });
-                }
-            } catch (err) {
-                console.error("[download] Image embed failed:", err);
-            }
-        }
-
         const html = buildSingleBreakdownTableHTML(breakdown, {
             standalone: true,
-            imageDataUrl,
         });
 
         const blob = new Blob([html], { type: "text/html" });
@@ -69,13 +47,20 @@ function BreakdownReportDetail({ breakdown, onDeleted }) {
     }
 
     async function handleCopyForEmail() {
+        const html = buildSingleBreakdownTableHTML(breakdown, { standalone: false });
+        const plain = `Breakdown Report — ${breakdown.job_number}`;
+
         try {
-            const result = await copyBreakdownTableToClipboard(breakdown);
-            setCopyStatus(
-                result.hasImage
-                    ? "Copied with image! Paste into your Outlook email."
-                    : "Copied (no image found). Paste into your Outlook email."
-            );
+            if (navigator.clipboard && window.ClipboardItem) {
+                const item = new ClipboardItem({
+                    "text/html": new Blob([html], { type: "text/html" }),
+                    "text/plain": new Blob([plain], { type: "text/plain" }),
+                });
+                await navigator.clipboard.write([item]);
+            } else {
+                await navigator.clipboard.writeText(plain);
+            }
+            setCopyStatus("Copied! Paste into your Outlook email.");
         } catch (err) {
             console.error("[copy] Clipboard write failed:", err);
             setCopyStatus("Copy failed — try again.");
@@ -146,64 +131,43 @@ function BreakdownReportDetail({ breakdown, onDeleted }) {
             {copyStatus && <p className="report-copy-status">{copyStatus}</p>}
 
             <div className="report-section">
-                <div className="report-section-title">
-                    <FiBriefcase />
-                    Logistic Details
-                </div>
+                <div className="report-section-title"><FiBriefcase />Job Details</div>
                 <div className="report-grid">
-                    <ReportField label="Job Number" value={breakdown.job_number} />
-                    <ReportField label="Vehicle Number" value={breakdown.vehicle_number} />
-                    <ReportField label="Requesting Plant" value={breakdown.requesting_plant} fullWidth />
+                    <ReportField label="Record ID" value={breakdown.job_number} />
+                    <ReportField label="Job No" value={breakdown.job_no} />
+                    <ReportField label="Incident Date/Time" value={breakdown.incident_datetime} />
+                    <ReportField label="Incident Month" value={breakdown.incident_month} />
+                    <ReportField label="Data Entered by" value={breakdown.owner_name} />
+                    <ReportField label="Reported Month" value={breakdown.reported_month} />
+                    <ReportField label="Time for Reporting" value={breakdown.time_for_reporting} />
+                    <ReportField label="Customer" value={breakdown.customer_name} />
+                    <ReportField label="Vehicle No" value={breakdown.vehicle_number} />
+                    <ReportField label="Driver" value={breakdown.driver} />
+                    <ReportField label="Supplier" value={breakdown.supplier_name} />
                 </div>
             </div>
 
             <div className="report-section">
-                <div className="report-section-title">
-                    <FiNavigation />
-                    Route Information
-                </div>
+                <div className="report-section-title"><FiAlertTriangle />Category</div>
                 <div className="report-grid">
-                    <ReportField label="Pickup Location" value={breakdown.pickup_location} />
-                    <ReportField label="Via Location" value={breakdown.via_location} />
-                    <ReportField label="Delivery Location" value={breakdown.delivery_location} fullWidth />
+                    <ReportField label="Category" value={breakdown.category} />
+                    <ReportField label="Injury Category" value={breakdown.injury_category} />
+                    <ReportField label="Category Detail" value={breakdown.category_detail} fullWidth />
                 </div>
             </div>
 
             <div className="report-section">
-                <div className="report-section-title">
-                    <FiAlertTriangle />
-                    Incident Details
-                </div>
+                <div className="report-section-title"><FiCheckSquare />Impact Assessment</div>
                 <div className="report-grid">
-                    <ReportField label="Incident Type" value={breakdown.incident_type} />
-                    <ReportField label="Incident Date & Time" value={breakdown.incident_datetime} />
-                    <ReportField label="Breakdown/Accident Location" value={breakdown.location} />
-                    <ReportField label="Reason / Description" value={breakdown.reason} fullWidth />
-                </div>
-            </div>
-
-            {breakdown.image_filename && (
-                <div className="report-section">
-                    <div className="report-section-title">
-                        <FiTruck />
-                        Visual Evidence
-                    </div>
-                    <img
-                        src={`/api/breakdowns/uploads/${breakdown.image_filename}`}
-                        alt="Breakdown site"
-                        className="breakdown-report-image"
-                    />
-                </div>
-            )}
-
-            <div className="report-section">
-                <div className="report-section-title">
-                    <FiCheckSquare />
-                    Monitoring Center Action
-                </div>
-                <div className="report-grid">
-                    <ReportField label="Action Taken / Resolution Notes" value={breakdown.action_taken} fullWidth />
-                    <ReportField label="Priority" value={breakdown.priority} />
+                    <ReportField label="Route Cause" value={breakdown.root_cause} />
+                    <ReportField label="Shipment Content (Goods)" value={breakdown.shipment_content} />
+                    <ReportField label="Third Party Life" value={breakdown.third_party_life} />
+                    <ReportField label="Driver/Assistant Life" value={breakdown.driver_assistant_life} />
+                    <ReportField label="Vehicle" value={breakdown.vehicle_impact} />
+                    <ReportField label="Third Party Property" value={breakdown.third_party_property} />
+                    <ReportField label="Delivery on Time" value={breakdown.delivery_on_time} />
+                    <ReportField label="Involvement of Police" value={breakdown.involvement_of_police} />
+                    <ReportField label="Legal Impact" value={breakdown.legal_impact} />
                 </div>
             </div>
 

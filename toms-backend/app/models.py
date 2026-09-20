@@ -72,6 +72,12 @@ class Coordinator(Base):
     name = Column(String, unique=True, nullable=False)
     mobile_number = Column(String, nullable=True)
 
+class Supplier(Base):
+    __tablename__ = "suppliers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+
 class Breakdown(Base):
     __tablename__ = "breakdowns"
 
@@ -86,6 +92,25 @@ class Breakdown(Base):
 
     incident_type = Column(String, default="Breakdown")  # Breakdown | Accident
     incident_datetime = Column(String, nullable=True)
+    
+    # ---> NEW COLUMNS EXTENDING BREAKDOWN
+    job_no = Column(String, nullable=True)
+    customer_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
+    driver = Column(String, nullable=True)
+    supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=True)
+    category = Column(String, nullable=True)
+    category_detail = Column(String, nullable=True)
+    injury_category = Column(String, nullable=True)
+    root_cause = Column(String, nullable=True)
+    shipment_content = Column(String, nullable=True)
+    third_party_life = Column(String, nullable=True)
+    driver_assistant_life = Column(String, nullable=True)
+    vehicle_impact = Column(String, nullable=True)
+    third_party_property = Column(String, nullable=True)
+    delivery_on_time = Column(String, nullable=True)
+    involvement_of_police = Column(String, nullable=True)
+    legal_impact = Column(String, nullable=True)
+
     location = Column(String, nullable=True)  # where the breakdown/accident happened
     reason = Column(String, nullable=True)
 

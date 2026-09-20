@@ -23,7 +23,7 @@ function Sidebar() {
     // 1. Remove "Clients" from the default menu array so staff won't see it
     const menu = [
         { title: "Stop Management", icon: <FiAlertTriangle />, to: "/stop-management" },
-        { title: "Breakdowns", icon: <FiClipboard />, to: "/breakdowns" },
+        { title: "Breakdowns/Accidents", icon: <FiClipboard />, to: "/breakdowns" },
         { title: "Reports", icon: <FiFileText />, to: "/reports" },
     ];
 

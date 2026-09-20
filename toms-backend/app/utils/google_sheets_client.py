@@ -70,20 +70,20 @@ def append_incident_row(sheet_title: str, row_values: list):
 # 2. MASTER SHEETS (New Code)
 # ==========================================
 
-# TODO: Change these headers to exactly match your Excel columns
+# ---> UPDATED: 45-column Breakdown Headers
 BREAKDOWN_HEADERS = [
-    "Job Number",
-    "Vehicle Number",
-    "Requesting Plant",
-    "Pickup Location",
-    "Via Location",
-    "Delivery Location",
-    "Incident (Break down/ Accident)",
-    "Reason",
-    "Break down / Accident happened location",
-    "Date & Time",
-    "Image of the breakdown place",
-    "Monitoring center Action",
+    "Record ID", "Data Entered by", "Incident Date/Time", "Incident Month",
+    "Reported Date/Time to the Compliance Team", "Reported Month", "Time for Reporting",
+    "Job No", "Incident Reference No by Compliance Team", "Customer", "Vehicle No",
+    "Driver", "Supplier", "Category", "Category Detail", "Injury Category", "Route Cause",
+    "Shipment Content (Goods)", "Third Party Life", "Driver/Assistant Life", "Vehicle",
+    "Third Party Property", "Delivery on Time", "Combined Result", "Severity Level",
+    "Severity Classification", "Involvement of Police", "Legal Impact", "Customer Claim",
+    "Other Cost", "Financial Impact", "Action", "Action Taken Date", "Remark", "Status",
+    "Action Closing Date", "Time for Action Closing", "Applicability of Correction",
+    "Correction", "Applicability of Corrective Action", "Corrective Action",
+    "Responsible Person for Corrective Action", "Target Date for Corrective Action",
+    "Target Month for Corrective Action", "Status for Corrective Action",
 ]
 
 STOP_MANAGEMENT_HEADERS = [
@@ -100,7 +100,20 @@ def get_or_create_master_sheet(sheet_title: str, headers: list):
         ws = sh.sheet1
         ws.update("A1", [headers])
 
-        end_col_letter = chr(64 + len(headers))
+        # Automatically determine the end column letter based on length of headers
+        # Note: chr(64 + len) only works up to 26 (column Z).
+        # We handle up to 45 columns here with a simple A-Z, AA-AZ builder.
+        col_count = len(headers)
+        if col_count <= 26:
+            end_col_letter = chr(64 + col_count)
+        else:
+            first_letter = chr(64 + (col_count // 26))
+            second_letter = chr(64 + (col_count % 26))
+            if second_letter == '@': # Handle exact multiples of 26
+                first_letter = chr(64 + (col_count // 26) - 1)
+                second_letter = 'Z'
+            end_col_letter = f"{first_letter}{second_letter}"
+
         ws.format(f"A1:{end_col_letter}1", {"textFormat": {"bold": True}})
 
     return sh

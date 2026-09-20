@@ -6,6 +6,7 @@ import { MsalProvider } from '@azure/msal-react'
 import { msalConfig } from './lib/msalConfig'
 import { AuthProvider } from './context/AuthContext'
 import { IncidentDraftProvider } from './context/IncidentDraftContext'
+import { BreakdownDraftProvider } from './context/BreakdownDraftContext'
 import './index.css'
 import App from './App.jsx'
 
@@ -21,7 +22,9 @@ async function startApp() {
         <BrowserRouter>
           <AuthProvider>
             <IncidentDraftProvider>
-              <App />
+              <BreakdownDraftProvider>
+                <App />
+              </BreakdownDraftProvider>
             </IncidentDraftProvider>
           </AuthProvider>
         </BrowserRouter>

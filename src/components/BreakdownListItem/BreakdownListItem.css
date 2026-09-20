@@ -43,15 +43,15 @@
     text-transform: uppercase;
 }
 
-.type-breakdown {
+/* .type-breakdown {
     background: var(--icon-amber-bg, rgba(217, 119, 6, 0.12));
     color: var(--accent-amber);
-}
+} */
 
-.type-accident {
+/* .type-accident {
     background: var(--icon-red-bg);
     color: var(--icon-red);
-}
+} */
 
 .breakdown-list-item-vehicle {
     font-size: 13px;
@@ -62,4 +62,34 @@
 .breakdown-list-item-date {
     font-size: 12px;
     color: var(--text-secondary);
+}
+
+.type-accident {
+    background: var(--icon-red-bg);
+    color: var(--icon-red);
+}
+
+.type-incident {
+    background: var(--icon-amber-bg, rgba(217, 119, 6, 0.12));
+    color: var(--accent-amber);
+}
+
+.type-breakdown {
+    background: var(--icon-blue-bg);
+    color: var(--icon-blue);
+}
+
+.type-investigation {
+    background: var(--icon-violet-bg);
+    color: var(--icon-violet);
+}
+
+.type-police-checking {
+    background: var(--accent-teal-dim);
+    color: var(--accent-teal);
+}
+
+.type-uncategorized {
+    background: var(--surface-hover);
+    color: var(--text-muted);
 }

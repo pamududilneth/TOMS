@@ -10,6 +10,8 @@ function formatDate(value) {
 }
 
 function BreakdownListItem({ breakdown, active, onClick }) {
+    const category = breakdown.category || "Uncategorized";
+
     return (
         <button
             type="button"
@@ -18,8 +20,8 @@ function BreakdownListItem({ breakdown, active, onClick }) {
         >
             <div className="breakdown-list-item-top">
                 <span className="breakdown-list-item-id">{breakdown.job_number}</span>
-                <span className={`incident-type-badge type-${breakdown.incident_type.toLowerCase()}`}>
-                    {breakdown.incident_type}
+                <span className={`incident-type-badge type-${category.toLowerCase().replace(/\s+/g, "-")}`}>
+                    {category}
                 </span>
             </div>
             <span className="breakdown-list-item-vehicle">{breakdown.vehicle_number}</span>

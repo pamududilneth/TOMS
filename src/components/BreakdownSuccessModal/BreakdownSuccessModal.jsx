@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "../SubmitSuccessModal/SubmitSuccessModal.css";
-import { copyBreakdownTableToClipboard } from "../../utils/clipboardCopy";
+import { buildSingleBreakdownTableHTML } from "../../utils/reportTable";
 import { FiCheckCircle, FiCopy, FiX } from "react-icons/fi";
 
 function BreakdownSuccessModal({ breakdown, onClose }) {
@@ -17,18 +17,24 @@ function BreakdownSuccessModal({ breakdown, onClose }) {
     if (!breakdown) return null;
 
     async function handleCopyForEmail() {
+        const html = buildSingleBreakdownTableHTML(breakdown, { standalone: false });
+        const plain = `Breakdown Report — ${breakdown.job_number}`;
+
         try {
-            const result = await copyBreakdownTableToClipboard(breakdown);
-            setCopyStatus(
-                result.hasImage
-                    ? "Copied with image! Paste into your Outlook email."
-                    : "Copied (no image found). Paste into your Outlook email."
-            );
-        } catch (err) {
-            console.error("[copy] Clipboard write failed:", err);
+            if (navigator.clipboard && window.ClipboardItem) {
+                const item = new ClipboardItem({
+                    "text/html": new Blob([html], { type: "text/html" }),
+                    "text/plain": new Blob([plain], { type: "text/plain" }),
+                });
+                await navigator.clipboard.write([item]);
+            } else {
+                await navigator.clipboard.writeText(plain);
+            }
+            setCopyStatus("Copied! Paste into your Outlook email.");
+        } catch {
             setCopyStatus("Copy failed — try again.");
         }
-        setTimeout(() => setCopyStatus(""), 4000);
+        setTimeout(() => setCopyStatus(""), 3500);
     }
 
     return (

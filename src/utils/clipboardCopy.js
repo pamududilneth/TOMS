@@ -33,24 +33,9 @@ export async function copyIncidentTableToClipboard(incident) {
 }
 
 export async function copyBreakdownTableToClipboard(breakdown) {
-    let imageDataUrl = null;
-
-    if (breakdown.image_filename) {
-        try {
-            imageDataUrl = await fetchImageAsDataUrl(
-                `/api/breakdowns/uploads/${breakdown.image_filename}`
-            );
-        } catch (err) {
-            console.error("[copy] Image embed failed:", err);
-        }
-    }
-
-    const html = buildSingleBreakdownTableHTML(breakdown, {
-        standalone: false,
-        imageDataUrl,
-    });
+    const html = buildSingleBreakdownTableHTML(breakdown, { standalone: false });
     const plain = `Breakdown Report — ${breakdown.job_number}`;
 
     await writeHtmlToClipboard(html, plain);
-    return { success: true, hasImage: !!imageDataUrl };
+    return { success: true };
 }

@@ -90,6 +90,8 @@ def delete_coordinator(coordinator_id: int, db: Session = Depends(get_db), _admi
     return {"deleted": True}
 
 
+# ── Stop Categories ──
+
 @router.get("/stop-categories")
 def list_stop_categories(db: Session = Depends(get_db)):
     return [c.name for c in db.query(models.StopCategory).order_by(models.StopCategory.name).all()]
@@ -119,5 +121,40 @@ def delete_stop_category(category_id: int, db: Session = Depends(get_db), _admin
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     db.delete(category)
+    db.commit()
+    return {"deleted": True}
+
+
+# ── Suppliers ──
+
+@router.get("/suppliers")
+def list_suppliers(db: Session = Depends(get_db)):
+    return [s.name for s in db.query(models.Supplier).order_by(models.Supplier.name).all()]
+
+
+@router.get("/suppliers/full", response_model=list[schemas.SupplierOut])
+def list_suppliers_full(db: Session = Depends(get_db)):
+    return db.query(models.Supplier).order_by(models.Supplier.name).all()
+
+
+@router.post("/suppliers", response_model=schemas.SupplierOut)
+def create_supplier(payload: schemas.SupplierCreate, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    existing = db.query(models.Supplier).filter(models.Supplier.name == payload.name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Supplier already exists")
+
+    supplier = models.Supplier(name=payload.name)
+    db.add(supplier)
+    db.commit()
+    db.refresh(supplier)
+    return supplier
+
+
+@router.delete("/suppliers/{supplier_id}")
+def delete_supplier(supplier_id: int, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    supplier = db.query(models.Supplier).filter(models.Supplier.id == supplier_id).first()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    db.delete(supplier)
     db.commit()
     return {"deleted": True}
