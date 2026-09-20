@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./IncidentEntry.css";
 
 import Topbar from "../../components/Topbar/Topbar";
 import PageToolbar from "../../components/PageToolbar/PageToolbar";
 import FormSection from "../../components/FormSection/FormSection";
 import FormField from "../../components/FormField/FormField";
+import SearchableSelect from "../../components/SearchableSelect/SearchableSelect";
 import SegmentedToggle from "../../components/SegmentedToggle/SegmentedToggle";
 import ToggleSwitch from "../../components/ToggleSwitch/ToggleSwitch";
 import SubmitSuccessModal from "../../components/SubmitSuccessModal/SubmitSuccessModal";
 import { api } from "../../lib/api";
+import { useIncidentDraft } from "../../context/IncidentDraftContext";
 
 import {
     FiAlertTriangle,
@@ -19,7 +21,7 @@ import {
 } from "react-icons/fi";
 
 function validateJobNo(value) {
-    if (!value) return null; // empty is allowed until required elsewhere
+    if (!value) return null;
     const prefix = value.slice(0, 3);
     const isValidPrefix = /^[A-Z]{3}$/.test(prefix);
     const isValidLength = value.length === 11 || value.length === 13;
@@ -29,38 +31,48 @@ function validateJobNo(value) {
     return null;
 }
 
-const emptyForm = {
-    job_no: "",
-    customer_id: "",
-    stop_category: "",
-    vehicle_number: "",
-    driver_name: "",
-    driver_contact_number: "",
-    assigned_coordinator: "",
-    coordinator_mobile_number: "",
-    driver_contacted: "Yes",
-    driver_feedback: "",
-    vehicle_parked: false,
-    current_parking_location: "",
-    stopped_date: "",
-    stopped_time: "",
-    pickup_location: "",
-    via_locations: "",
-    delivery_location: "",
-    duration: "",
-};
+// Every field is mandatory except Via Location(s)
+const REQUIRED_FIELDS = [
+    { key: "job_no", label: "Job No" },
+    { key: "customer_id", label: "Customer" },
+    { key: "stop_category", label: "Vehicle Stop Category" },
+    { key: "vehicle_number", label: "Vehicle No" },
+    { key: "driver_name", label: "Driver Name" },
+    { key: "driver_contact_number", label: "Driver Contact No" },
+    { key: "assigned_coordinator", label: "Vehicle Assigned by (Coordinator Name)" },
+    { key: "coordinator_mobile_number", label: "Coordinator Mobile No" },
+    { key: "driver_feedback", label: "Driver Feedback - If Contacted" },
+    { key: "current_parking_location", label: "Vehicle Stopped Location" },
+    { key: "stopped_date", label: "Vehicle Stopped Date" },
+    { key: "stopped_time", label: "Vehicle Stopped Time" },
+    { key: "pickup_location", label: "Pickup Location" },
+    { key: "delivery_location", label: "Delivery Location" },
+    { key: "duration", label: "Duration" },
+];
+
+function validateRequiredFields(form) {
+    return REQUIRED_FIELDS
+        .filter(({ key }) => {
+            const value = form[key];
+            return value === null || value === undefined || String(value).trim() === "";
+        })
+        .map((f) => f.label);
+}
 
 function IncidentEntry() {
+    const { form, setForm, resetForm } = useIncidentDraft();
+
     const [previewId, setPreviewId] = useState("Generating...");
-    const [form, setForm] = useState(emptyForm);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [submittedIncident, setSubmittedIncident] = useState(null);
-    const [jobNoError, setJobNoError] = useState(null);
+    const [jobNoError, setJobNoError] = useState(() => validateJobNo(form.job_no));
     const [stopCategories, setStopCategories] = useState([]);
 
     const [coordinators, setCoordinators] = useState([]);
     const [clients, setClients] = useState([]);
+
+    const submittingRef = useRef(false);
 
     useEffect(() => {
         refreshRequestId();
@@ -102,6 +114,8 @@ function IncidentEntry() {
     }
 
     async function handleSubmit() {
+        if (submittingRef.current) return;
+
         const validationError = validateJobNo(form.job_no);
         if (validationError) {
             setJobNoError(validationError);
@@ -109,6 +123,13 @@ function IncidentEntry() {
             return;
         }
 
+        const missing = validateRequiredFields(form);
+        if (missing.length > 0) {
+            setError(`Please fill in the following required fields: ${missing.join(", ")}`);
+            return;
+        }
+
+        submittingRef.current = true;
         setSubmitting(true);
         setError(null);
         try {
@@ -118,7 +139,7 @@ function IncidentEntry() {
             };
             const created = await api.createIncident(payload);
             setSubmittedIncident(created);
-            setForm(emptyForm);
+            resetForm();
             setJobNoError(null);
             refreshRequestId();
             refreshClients();
@@ -126,11 +147,12 @@ function IncidentEntry() {
             setError(err.message);
         } finally {
             setSubmitting(false);
+            submittingRef.current = false;
         }
     }
 
     function handleDiscard() {
-        setForm(emptyForm);
+        resetForm();
         setJobNoError(null);
         setError(null);
     }
@@ -160,6 +182,7 @@ function IncidentEntry() {
                         />
                         <FormField
                             label="Job No"
+                            required
                             placeholder="Enter job number"
                             value={form.job_no}
                             onChange={(e) => {
@@ -172,24 +195,24 @@ function IncidentEntry() {
                         />
                     </div>
                     <div className="form-row">
-                        <FormField
+                        <SearchableSelect
                             label="Customer"
-                            type="select"
+                            required
                             placeholder="Select customer"
                             options={clients.map((c) => c.name)}
                             value={clients.find((c) => c.id === Number(form.customer_id))?.name || ""}
-                            onChange={(e) => {
-                                const match = clients.find((c) => c.name === e.target.value);
+                            onChange={(name) => {
+                                const match = clients.find((c) => c.name === name);
                                 updateField("customer_id", match ? match.id : "");
                             }}
                         />
-                        <FormField
+                        <SearchableSelect
                             label="Vehicle Stop Category"
-                            type="select"
+                            required
                             placeholder="Select category"
                             options={stopCategories}
                             value={form.stop_category}
-                            onChange={(e) => updateField("stop_category", e.target.value)}
+                            onChange={(val) => updateField("stop_category", val)}
                         />
                     </div>
                 </FormSection>
@@ -220,16 +243,17 @@ function IncidentEntry() {
                             value={form.driver_contact_number}
                             onChange={(e) => updateField("driver_contact_number", e.target.value)}
                         />
-                        <FormField
+                        <SearchableSelect
                             label="Vehicle Assigned by (Coordinator Name)"
-                            type="select"
+                            required
                             placeholder="Select Coordinator"
                             options={coordinators.map((c) => c.name)}
                             value={form.assigned_coordinator}
-                            onChange={(e) => handleCoordinatorChange(e.target.value)}
+                            onChange={handleCoordinatorChange}
                         />
                         <FormField
                             label="Coordinator Mobile No"
+                            required
                             value={form.coordinator_mobile_number}
                             readOnly
                             helper="Auto-filled from selected coordinator"
@@ -241,6 +265,7 @@ function IncidentEntry() {
                     <div className="form-row">
                         <FormField
                             label="Vehicle Stopped Location"
+                            required
                             icon={<FiMapPin />}
                             placeholder="Search coordinates or address..."
                             value={form.current_parking_location}
@@ -248,18 +273,21 @@ function IncidentEntry() {
                         />
                         <FormField
                             label="Duration"
+                            required
                             placeholder="e.g. 2h 30m"
                             value={form.duration}
                             onChange={(e) => updateField("duration", e.target.value)}
                         />
                         <FormField
                             label="Vehicle Stopped Date"
+                            required
                             type="date"
                             value={form.stopped_date}
                             onChange={(e) => updateField("stopped_date", e.target.value)}
                         />
                         <FormField
                             label="Vehicle Stopped Time"
+                            required
                             type="time"
                             value={form.stopped_time}
                             onChange={(e) => updateField("stopped_time", e.target.value)}
@@ -268,6 +296,7 @@ function IncidentEntry() {
                     <div className="form-row form-row-3">
                         <FormField
                             label="Pickup Location"
+                            required
                             value={form.pickup_location}
                             onChange={(e) => updateField("pickup_location", e.target.value)}
                         />
@@ -278,6 +307,7 @@ function IncidentEntry() {
                         />
                         <FormField
                             label="Delivery Location"
+                            required
                             value={form.delivery_location}
                             onChange={(e) => updateField("delivery_location", e.target.value)}
                         />
@@ -300,6 +330,7 @@ function IncidentEntry() {
                     </div>
                     <FormField
                         label="Driver Feedback - If Contacted"
+                        required
                         type="textarea"
                         value={form.driver_feedback}
                         onChange={(e) => updateField("driver_feedback", e.target.value)}

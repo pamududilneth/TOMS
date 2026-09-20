@@ -5,6 +5,7 @@ import { PublicClientApplication } from '@azure/msal-browser'
 import { MsalProvider } from '@azure/msal-react'
 import { msalConfig } from './lib/msalConfig'
 import { AuthProvider } from './context/AuthContext'
+import { IncidentDraftProvider } from './context/IncidentDraftContext'
 import './index.css'
 import App from './App.jsx'
 
@@ -19,7 +20,9 @@ async function startApp() {
       <MsalProvider instance={msalInstance}>
         <BrowserRouter>
           <AuthProvider>
-            <App />
+            <IncidentDraftProvider>
+              <App />
+            </IncidentDraftProvider>
           </AuthProvider>
         </BrowserRouter>
       </MsalProvider>
