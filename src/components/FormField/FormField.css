@@ -95,3 +95,16 @@
     color: var(--text-secondary);
     font-family: var(--font-mono);
 }
+
+.field-inline-error {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--icon-red);
+    margin-bottom: 2px;
+}
+
+.field-control-error input,
+.field-control-error select,
+.field-control-error textarea {
+    border-color: var(--icon-red) !important;
+}

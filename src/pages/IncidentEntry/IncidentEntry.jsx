@@ -31,7 +31,7 @@ function validateJobNo(value) {
     return null;
 }
 
-// Every field is mandatory except Via Location(s)
+// Every field is required except Via Location(s)
 const REQUIRED_FIELDS = [
     { key: "job_no", label: "Job No" },
     { key: "customer_id", label: "Customer" },
@@ -50,15 +50,6 @@ const REQUIRED_FIELDS = [
     { key: "duration", label: "Duration" },
 ];
 
-function validateRequiredFields(form) {
-    return REQUIRED_FIELDS
-        .filter(({ key }) => {
-            const value = form[key];
-            return value === null || value === undefined || String(value).trim() === "";
-        })
-        .map((f) => f.label);
-}
-
 function IncidentEntry() {
     const { form, setForm, resetForm } = useIncidentDraft();
 
@@ -67,6 +58,7 @@ function IncidentEntry() {
     const [error, setError] = useState(null);
     const [submittedIncident, setSubmittedIncident] = useState(null);
     const [jobNoError, setJobNoError] = useState(() => validateJobNo(form.job_no));
+    const [fieldErrors, setFieldErrors] = useState({});
     const [stopCategories, setStopCategories] = useState([]);
 
     const [coordinators, setCoordinators] = useState([]);
@@ -102,6 +94,13 @@ function IncidentEntry() {
 
     function updateField(name, value) {
         setForm((prev) => ({ ...prev, [name]: value }));
+        if (fieldErrors[name]) {
+            setFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next[name];
+                return next;
+            });
+        }
     }
 
     function handleCoordinatorChange(name) {
@@ -111,6 +110,14 @@ function IncidentEntry() {
             assigned_coordinator: name,
             coordinator_mobile_number: match?.mobile_number || "",
         }));
+        if (fieldErrors.assigned_coordinator || fieldErrors.coordinator_mobile_number) {
+            setFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next.assigned_coordinator;
+                delete next.coordinator_mobile_number;
+                return next;
+            });
+        }
     }
 
     async function handleSubmit() {
@@ -123,12 +130,21 @@ function IncidentEntry() {
             return;
         }
 
-        const missing = validateRequiredFields(form);
-        if (missing.length > 0) {
-            setError(`Please fill in the following required fields: ${missing.join(", ")}`);
+        const missing = {};
+        REQUIRED_FIELDS.forEach(({ key }) => {
+            const value = form[key];
+            if (value === null || value === undefined || String(value).trim() === "") {
+                missing[key] = "This field is required";
+            }
+        });
+
+        if (Object.keys(missing).length > 0) {
+            setFieldErrors(missing);
+            setError("Please fill in all required fields, highlighted below.");
             return;
         }
 
+        setFieldErrors({});
         submittingRef.current = true;
         setSubmitting(true);
         setError(null);
@@ -141,6 +157,7 @@ function IncidentEntry() {
             setSubmittedIncident(created);
             resetForm();
             setJobNoError(null);
+            setFieldErrors({});
             refreshRequestId();
             refreshClients();
         } catch (err) {
@@ -154,6 +171,7 @@ function IncidentEntry() {
     function handleDiscard() {
         resetForm();
         setJobNoError(null);
+        setFieldErrors({});
         setError(null);
     }
 
@@ -185,6 +203,7 @@ function IncidentEntry() {
                             required
                             placeholder="Enter job number"
                             value={form.job_no}
+                            error={fieldErrors.job_no}
                             onChange={(e) => {
                                 const value = e.target.value.toUpperCase();
                                 updateField("job_no", value);
@@ -201,6 +220,7 @@ function IncidentEntry() {
                             placeholder="Select customer"
                             options={clients.map((c) => c.name)}
                             value={clients.find((c) => c.id === Number(form.customer_id))?.name || ""}
+                            error={fieldErrors.customer_id}
                             onChange={(name) => {
                                 const match = clients.find((c) => c.name === name);
                                 updateField("customer_id", match ? match.id : "");
@@ -212,6 +232,7 @@ function IncidentEntry() {
                             placeholder="Select category"
                             options={stopCategories}
                             value={form.stop_category}
+                            error={fieldErrors.stop_category}
                             onChange={(val) => updateField("stop_category", val)}
                         />
                     </div>
@@ -223,6 +244,7 @@ function IncidentEntry() {
                         required
                         placeholder="e.g. MH 12 AB 1234"
                         value={form.vehicle_number}
+                        error={fieldErrors.vehicle_number}
                         onChange={(e) => updateField("vehicle_number", e.target.value)}
                     />
                 </FormSection>
@@ -234,6 +256,7 @@ function IncidentEntry() {
                             required
                             placeholder="Enter driver name"
                             value={form.driver_name}
+                            error={fieldErrors.driver_name}
                             onChange={(e) => updateField("driver_name", e.target.value)}
                         />
                         <FormField
@@ -241,6 +264,7 @@ function IncidentEntry() {
                             required
                             placeholder="Enter contact number"
                             value={form.driver_contact_number}
+                            error={fieldErrors.driver_contact_number}
                             onChange={(e) => updateField("driver_contact_number", e.target.value)}
                         />
                         <SearchableSelect
@@ -249,6 +273,7 @@ function IncidentEntry() {
                             placeholder="Select Coordinator"
                             options={coordinators.map((c) => c.name)}
                             value={form.assigned_coordinator}
+                            error={fieldErrors.assigned_coordinator}
                             onChange={handleCoordinatorChange}
                         />
                         <FormField
@@ -256,6 +281,7 @@ function IncidentEntry() {
                             required
                             value={form.coordinator_mobile_number}
                             readOnly
+                            error={fieldErrors.coordinator_mobile_number}
                             helper="Auto-filled from selected coordinator"
                         />
                     </div>
@@ -269,6 +295,7 @@ function IncidentEntry() {
                             icon={<FiMapPin />}
                             placeholder="Search coordinates or address..."
                             value={form.current_parking_location}
+                            error={fieldErrors.current_parking_location}
                             onChange={(e) => updateField("current_parking_location", e.target.value)}
                         />
                         <FormField
@@ -276,6 +303,7 @@ function IncidentEntry() {
                             required
                             placeholder="e.g. 2h 30m"
                             value={form.duration}
+                            error={fieldErrors.duration}
                             onChange={(e) => updateField("duration", e.target.value)}
                         />
                         <FormField
@@ -283,6 +311,7 @@ function IncidentEntry() {
                             required
                             type="date"
                             value={form.stopped_date}
+                            error={fieldErrors.stopped_date}
                             onChange={(e) => updateField("stopped_date", e.target.value)}
                         />
                         <FormField
@@ -290,6 +319,7 @@ function IncidentEntry() {
                             required
                             type="time"
                             value={form.stopped_time}
+                            error={fieldErrors.stopped_time}
                             onChange={(e) => updateField("stopped_time", e.target.value)}
                         />
                     </div>
@@ -298,6 +328,7 @@ function IncidentEntry() {
                             label="Pickup Location"
                             required
                             value={form.pickup_location}
+                            error={fieldErrors.pickup_location}
                             onChange={(e) => updateField("pickup_location", e.target.value)}
                         />
                         <FormField
@@ -309,6 +340,7 @@ function IncidentEntry() {
                             label="Delivery Location"
                             required
                             value={form.delivery_location}
+                            error={fieldErrors.delivery_location}
                             onChange={(e) => updateField("delivery_location", e.target.value)}
                         />
                     </div>
@@ -333,6 +365,7 @@ function IncidentEntry() {
                         required
                         type="textarea"
                         value={form.driver_feedback}
+                        error={fieldErrors.driver_feedback}
                         onChange={(e) => updateField("driver_feedback", e.target.value)}
                     />
                 </FormSection>

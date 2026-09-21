@@ -12,6 +12,7 @@ function SearchableSelect({
     required = false,
     helper,
     helperError = false,
+    error,
 }) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
@@ -44,7 +45,7 @@ function SearchableSelect({
                 panelRef.current && !panelRef.current.contains(e.target)
             ) {
                 setOpen(false);
-                setSearch("");
+                search("");
             }
         }
 
@@ -82,7 +83,9 @@ function SearchableSelect({
                 </label>
             )}
 
-            <div className="searchable-select" ref={triggerRef}>
+            {error && <span className="field-inline-error">{error}</span>}
+
+            <div className={`searchable-select ${error ? "searchable-select-error" : ""}`} ref={triggerRef}>
                 <button
                     type="button"
                     className="searchable-select-trigger"

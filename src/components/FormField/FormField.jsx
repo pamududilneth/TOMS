@@ -7,6 +7,7 @@ function FormField({
     placeholder,
     helper,
     helperError = false,
+    error,
     icon,
     options,
     value,
@@ -23,7 +24,9 @@ function FormField({
                 </label>
             )}
 
-            <div className={`field-control ${icon ? "has-icon" : ""} ${readOnly ? "field-readonly" : ""}`}>
+            {error && <span className="field-inline-error">{error}</span>}
+
+            <div className={`field-control ${icon ? "has-icon" : ""} ${readOnly ? "field-readonly" : ""} ${error ? "field-control-error" : ""}`}>
                 {icon && <span className="field-icon">{icon}</span>}
 
                 {type === "select" ? (
