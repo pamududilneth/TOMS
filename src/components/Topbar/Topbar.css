@@ -1,17 +1,35 @@
 .topbar {
     height: 64px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 28px;
     position: sticky;
     top: 0;
-    z-index: 50;
-    /* Increased to ensure dropdowns overlap other content */
+    z-index: 999;
+    pointer-events: auto;
+
+    /* 1. Make the main container completely transparent */
+    background: transparent;
+    border-bottom: none;
+
+    /* 2. Remove any transforms/filters from this main container */
+}
+
+/* 3. Create a dedicated background layer just for the glass effect */
+.topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* This stretches the layer to fill the topbar */
+    z-index: -1;
+    /* Pushes the glass layer behind your icons and profile */
+
+    /* 4. Hardcode the liquid glass values directly */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .topbar-left {
@@ -25,37 +43,6 @@
     font-size: 15px;
     font-weight: 600;
     color: var(--text-primary);
-}
-
-.topbar-search {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--canvas);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 14px;
-    width: 260px;
-    color: var(--text-muted);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.topbar-search:focus-within {
-    border-color: var(--accent-teal);
-    box-shadow: 0 0 0 3px var(--accent-teal-dim);
-}
-
-.topbar-search input {
-    border: none;
-    background: transparent;
-    outline: none;
-    font-size: 13px;
-    width: 100%;
-    color: var(--text-primary);
-}
-
-.topbar-search input::placeholder {
-    color: var(--text-muted);
 }
 
 .topbar-right {
@@ -106,7 +93,7 @@
     box-shadow: var(--shadow-card);
     min-width: 220px;
     padding: 8px 0;
-    z-index: 100;
+    z-index: 1000;
     animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

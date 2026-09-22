@@ -1,0 +1,26 @@
+.app-footer {
+    display: flex;
+    align-items: center;
+    /* space-between automatically pushes the items to opposite ends */
+    justify-content: space-between;
+    /* A small gap acts as a safety buffer so they never touch on tiny screens */
+    gap: 20px;
+    padding: 14px 32px;
+    /* Slightly increased padding so it doesn't hug the very edge */
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    margin-top: auto;
+}
+
+.app-footer-logo {
+    height: 20px;
+    width: auto;
+    object-fit: contain;
+}
+
+.app-footer-text {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+}

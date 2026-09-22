@@ -9,6 +9,8 @@ import { api } from "../../lib/api";
 function Settings() {
     const [coordinators, setCoordinators] = useState([]);
     const [clients, setClients] = useState([]);
+    const [stopCategories, setStopCategories] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
 
     function loadCoordinators() {
         api.listCoordinatorsFull().then(setCoordinators).catch(() => setCoordinators([]));
@@ -18,9 +20,19 @@ function Settings() {
         api.listClientsFull().then(setClients).catch(() => setClients([]));
     }
 
+    function loadStopCategories() {
+        api.listStopCategoriesFull().then(setStopCategories).catch(() => setStopCategories([]));
+    }
+
+    function loadSuppliers() {
+        api.listSuppliersFull().then(setSuppliers).catch(() => setSuppliers([]));
+    }
+
     useEffect(() => {
         loadCoordinators();
         loadClients();
+        loadStopCategories();
+        loadSuppliers();
     }, []);
 
     async function handleAddCoordinator(values) {
@@ -47,6 +59,26 @@ function Settings() {
     async function handleDeleteClient(id) {
         await api.deleteClient(id);
         loadClients();
+    }
+
+    async function handleAddStopCategory(values) {
+        await api.createStopCategory({ name: values.name });
+        loadStopCategories();
+    }
+
+    async function handleDeleteStopCategory(id) {
+        await api.deleteStopCategory(id);
+        loadStopCategories();
+    }
+
+    async function handleAddSupplier(values) {
+        await api.createSupplier({ name: values.name });
+        loadSuppliers();
+    }
+
+    async function handleDeleteSupplier(id) {
+        await api.deleteSupplier(id);
+        loadSuppliers();
     }
 
     return (
@@ -84,6 +116,24 @@ function Settings() {
                         { key: "name", placeholder: "Client name", required: true },
                         { key: "email", placeholder: "Email (for report sharing)", type: "email" },
                     ]}
+                />
+
+                <SettingsTable
+                    title="Vehicle Stop Categories"
+                    columns={[{ key: "name", label: "Name" }]}
+                    rows={stopCategories}
+                    onAdd={handleAddStopCategory}
+                    onDelete={handleDeleteStopCategory}
+                    addFields={[{ key: "name", placeholder: "Category name", required: true }]}
+                />
+
+                <SettingsTable
+                    title="Suppliers"
+                    columns={[{ key: "name", label: "Name" }]}
+                    rows={suppliers}
+                    onAdd={handleAddSupplier}
+                    onDelete={handleDeleteSupplier}
+                    addFields={[{ key: "name", placeholder: "Supplier name", required: true }]}
                 />
 
             </div>

@@ -1,0 +1,156 @@
+.submit-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 14, 23, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.submit-modal-card {
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    /* Increased from 16px */
+    -webkit-backdrop-filter: blur(24px);
+    /* Increased from 16px */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: backdrop-filter;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 16px;
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.submit-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.submit-modal-close:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.submit-modal-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-teal-dim);
+    color: var(--accent-teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 16px;
+}
+
+.submit-modal-card h2 {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.submit-modal-subtitle {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.submit-modal-copy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.submit-modal-copy-btn:hover {
+    border-color: var(--accent-teal);
+    color: var(--accent-teal);
+}
+
+.submit-modal-status {
+    font-size: 12.5px;
+    color: var(--accent-teal);
+    font-weight: 500;
+    margin-top: 12px;
+}
+
+.submit-modal-done-btn {
+    width: 100%;
+    max-width: 300px;
+    margin: 14px auto 0 auto;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: var(--text-primary);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: block;
+}
+
+/* =========================================
+   NEW TABLE STYLES (Includes Dark Green Header)
+   ========================================= */
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 13px;
+    text-align: left;
+}
+
+.summary-table th,
+.summary-table td {
+    border: 1px solid var(--border-strong);
+    padding: 12px;
+}
+
+/* This targets the table headers specifically */
+.summary-table th {
+    background-color: #003300;
+    /* Dark, rich green */
+    color: #ffffff;
+    /* White text */
+    border-color: #003300;
+    font-weight: 600;
+}
+
+.summary-table td {
+    background-color: var(--surface);
+    color: var(--text-primary);
+}

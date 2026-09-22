@@ -1,46 +1,55 @@
-
-// ── Edit widths here — just change the number (in px) for any field ──
 const DETAIL_FIELDS = [
-    { key: "request_id", label: "Request ID", width: 130 },
-    { key: "vehicle_number", label: "Vehicle Number", width: 120 },
+    { key: "request_id", label: "Key", width: 100 },
+    { key: "owner_name", label: "User", width: 130 },
+    { key: "reported_date", label: "Reported Date by the Call Centre", width: 150 },
+    { key: "reported_time", label: "Reported Time by the Call Centre", width: 150 },
+    { key: "customer_name", label: "Customer", width: 150 },
+    { key: "stop_category", label: "Vehicle Stop Category", width: 180 },
+    { key: "job_no", label: "Job No", width: 120 },
+    { key: "vehicle_number", label: "Vehicle No", width: 120 },
     { key: "driver_name", label: "Driver Name", width: 140 },
-    { key: "driver_contact_number", label: "Driver Contact", width: 120 },
-    { key: "assigned_coordinator", label: "Coordinator", width: 140 },
-    { key: "coordinator_mobile_number", label: "Coordinator Mobile", width: 130 },
-    { key: "current_parking_location", label: "Current Parking Location", width: 180 },
-    { key: "parked_time", label: "Parked Time", width: 100 },
+    { key: "driver_contact_number", label: "Driver Contact No", width: 130 },
+    { key: "assigned_coordinator", label: "Vehicle Assigned by (Coordinator Name)", width: 200 },
+    { key: "coordinator_mobile_number", label: "Coordinator Mobile No", width: 150 },
+    { key: "driver_contacted", label: "Driver Contacted by OKI DOKI", width: 170 },
+    { key: "driver_feedback", label: "Driver Feedback - If Contacted", width: 220 },
+    { key: "vehicle_parked", label: "Vehicle Parking with Goods", width: 170 },
+    { key: "current_parking_location", label: "Vehicle Stopped Location", width: 200 },
+    { key: "stopped_date", label: "Vehicle Stopped Date", width: 150 },
+    { key: "stopped_time", label: "Vehicle Stopped Time", width: 150 },
+    { key: "stopped_datetime_v2", label: "Vehicle Stopped Date & Time - V2", width: 190 },
     { key: "pickup_location", label: "Pickup Location", width: 160 },
-    { key: "via_locations", label: "Via Location(s)", width: 160 },
+    { key: "via_locations", label: "Via Location/s", width: 160 },
     { key: "delivery_location", label: "Delivery Location", width: 160 },
-    { key: "driver_contacted", label: "Driver Contacted", width: 110 },
-    { key: "driver_feedback", label: "Driver Feedback", width: 220 },
-    { key: "vehicle_parked", label: "Vehicle Parked", width: 100 },
-    { key: "approver", label: "Approver", width: 130 },
-    { key: "client_name", label: "Client", width: 140 },
-    { key: "status", label: "Status", width: 100 },
-    { key: "created_at", label: "Submitted At", width: 150 },
+    { key: "duration", label: "Duration", width: 120 },
 ];
 
-// ── List/report-table columns (used elsewhere) — same idea, separate widths ──
-const COLUMNS = [
-    { key: "request_id", label: "Request ID", width: 130 },
-    { key: "vehicle_number", label: "Vehicle Number", width: 120 },
-    { key: "driver_name", label: "Driver Name", width: 140 },
-    { key: "driver_contact_number", label: "Driver Contact", width: 120 },
-    { key: "assigned_coordinator", label: "Coordinator", width: 140 },
-    { key: "coordinator_mobile_number", label: "Coordinator Mobile", width: 130 },
-    { key: "current_parking_location", label: "Current Parking Location", width: 180 },
-    { key: "parked_time", label: "Parked Time", width: 100 },
-    { key: "pickup_location", label: "Pickup Location", width: 160 },
-    { key: "via_locations", label: "Via Location(s)", width: 160 },
-    { key: "delivery_location", label: "Delivery Location", width: 160 },
-    { key: "driver_contacted", label: "Driver Contacted", width: 110 },
-    { key: "driver_feedback", label: "Driver Feedback", width: 220 },
-    { key: "vehicle_parked", label: "Vehicle Parked", width: 100 },
-    { key: "approver", label: "Approver", width: 130 },
-    { key: "client_name", label: "Client", width: 140 },
-    { key: "status", label: "Status", width: 100 },
-    { key: "created_at", label: "Submitted At", width: 150 },
+const COLUMNS = DETAIL_FIELDS;
+
+const BREAKDOWN_COLUMNS = [
+    { key: "job_number", label: "Record ID", width: 100 },
+    { key: "owner_name", label: "Data Entered by", width: 130 },
+    { key: "incident_datetime", label: "Incident Date/Time", width: 150 },
+    { key: "incident_month", label: "Incident Month", width: 130 },
+    { key: "reported_month", label: "Reported Month", width: 130 },
+    { key: "time_for_reporting", label: "Time for Reporting", width: 140 },
+    { key: "job_no", label: "Job No", width: 130 },
+    { key: "customer_name", label: "Customer", width: 150 },
+    { key: "vehicle_number", label: "Vehicle No", width: 120 },
+    { key: "driver", label: "Driver", width: 130 },
+    { key: "supplier_name", label: "Supplier", width: 130 },
+    { key: "category", label: "Category", width: 130 },
+    { key: "category_detail", label: "Category Detail", width: 220 },
+    { key: "injury_category", label: "Injury Category", width: 160 },
+    { key: "root_cause", label: "Route Cause", width: 150 },
+    { key: "shipment_content", label: "Shipment Content (Goods)", width: 160 },
+    { key: "third_party_life", label: "Third Party Life", width: 150 },
+    { key: "driver_assistant_life", label: "Driver/Assistant Life", width: 160 },
+    { key: "vehicle_impact", label: "Vehicle", width: 160 },
+    { key: "third_party_property", label: "Third Party Property", width: 160 },
+    { key: "delivery_on_time", label: "Delivery on Time", width: 140 },
+    { key: "involvement_of_police", label: "Involvement of Police", width: 150 },
+    { key: "legal_impact", label: "Legal Impact", width: 130 },
 ];
 
 function escapeHtml(value) {
@@ -53,13 +62,27 @@ function escapeHtml(value) {
 
 function formatCell(incident, key) {
     if (key === "vehicle_parked") return incident.vehicle_parked ? "Yes" : "No";
-    if (key === "created_at" && incident.created_at) {
-        return new Date(incident.created_at).toLocaleString(undefined, {
+    if (key === "reported_date" && incident.created_at) {
+        return new Date(incident.created_at).toLocaleDateString();
+    }
+    if (key === "reported_time" && incident.created_at) {
+        return new Date(incident.created_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    }
+    if (key === "stopped_datetime_v2") {
+        if (!incident.stopped_date || !incident.stopped_time) return "—";
+        return `${incident.stopped_date} ${incident.stopped_time}`;
+    }
+    return escapeHtml(incident[key]);
+}
+
+function formatBreakdownCell(breakdown, key) {
+    if (key === "created_at" && breakdown.created_at) {
+        return new Date(breakdown.created_at).toLocaleString(undefined, {
             dateStyle: "medium",
             timeStyle: "short",
         });
     }
-    return escapeHtml(incident[key]);
+    return escapeHtml(breakdown[key]);
 }
 
 function buildColGroup(fields) {
@@ -118,7 +141,7 @@ ${table}
 </html>`;
 }
 
-// ── Single incident, one row, one table ──
+// ── Single incident, horizontal table (one header row, one data row) ──
 export function buildSingleIncidentTableHTML(incident, { standalone = false } = {}) {
     const colGroup = buildColGroup(DETAIL_FIELDS);
 
@@ -158,34 +181,7 @@ ${table}
 </html>`;
 }
 
-
-const BREAKDOWN_COLUMNS = [
-    { key: "job_number", label: "Job Number", width: 130 },
-    { key: "vehicle_number", label: "Vehicle Number", width: 120 },
-    { key: "requesting_plant", label: "Requesting Plant", width: 200 },
-    { key: "pickup_location", label: "Pickup Location", width: 180 },
-    { key: "via_location", label: "Via Location", width: 180 },
-    { key: "delivery_location", label: "Delivery Location", width: 180 },
-    { key: "incident_type", label: "Incident Type", width: 110 },
-    { key: "incident_datetime", label: "Incident Date & Time", width: 150 },
-    { key: "location", label: "Breakdown/Accident Location", width: 180 },
-    { key: "reason", label: "Reason", width: 220 },
-    { key: "action_taken", label: "Monitoring Center Action", width: 220 },
-    { key: "priority", label: "Priority", width: 130 },
-    { key: "status", label: "Status", width: 100 },
-    { key: "created_at", label: "Submitted At", width: 150 },
-];
-
-function formatBreakdownCell(breakdown, key) {
-    if (key === "created_at" && breakdown.created_at) {
-        return new Date(breakdown.created_at).toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short",
-        });
-    }
-    return escapeHtml(breakdown[key]);
-}
-
+// ── Full list of breakdowns, one row per breakdown ──
 export function buildBreakdownTableHTML(breakdowns, { standalone = false } = {}) {
     const colGroup = buildColGroup(BREAKDOWN_COLUMNS);
 
@@ -230,25 +226,28 @@ ${table}
 </html>`;
 }
 
-export function buildSingleBreakdownTableHTML(breakdown, { standalone = false } = {}) {
-    const colGroup = buildColGroup(BREAKDOWN_COLUMNS);
+// ── Single breakdown, vertical field/value table, with optional embedded image row ──
+export function buildSingleBreakdownTableHTML(breakdown, { standalone = false, imageDataUrl = null } = {}) {
+    const rows = BREAKDOWN_COLUMNS.map(({ key, label }) => {
+        const value = formatBreakdownCell(breakdown, key);
+        return `
+    <tr>
+      <td style="padding:9px 14px;border:1px solid #e4e8f0;background:#f4f6fb;font-weight:600;width:220px;vertical-align:top;">${escapeHtml(label)}</td>
+      <td style="padding:9px 14px;border:1px solid #e4e8f0;">${value}</td>
+    </tr>`;
+    }).join("");
 
-    const headerRow = BREAKDOWN_COLUMNS
-        .map((f) => `<th style="${HEADER_CELL_STYLE}">${escapeHtml(f.label)}</th>`)
-        .join("");
-
-    const valueRow = BREAKDOWN_COLUMNS
-        .map((f) => `<td style="${CELL_STYLE}">${formatBreakdownCell(breakdown, f.key)}</td>`)
-        .join("");
+    const imageRow = imageDataUrl
+        ? `
+    <tr>
+      <td style="padding:9px 14px;border:1px solid #e4e8f0;background:#f4f6fb;font-weight:600;width:220px;vertical-align:top;">Visual Evidence</td>
+      <td style="padding:9px 14px;border:1px solid #e4e8f0;"><img src="${imageDataUrl}" alt="Breakdown site" style="max-width:280px;border-radius:6px;display:block;" /></td>
+    </tr>`
+        : "";
 
     const table = `
-<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;table-layout:fixed;">
-  ${colGroup}
-  <thead>
-    <tr>${headerRow}</tr>
-  </thead>
-  <tbody>
-    <tr style="background:#ffffff;">${valueRow}</tr>
+<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;min-width:520px;">
+  <tbody>${rows}${imageRow}
   </tbody>
 </table>`.trim();
 
@@ -268,262 +267,3 @@ ${table}
 </body>
 </html>`;
 }
-/*
-const COLUMNS = [
-    { key: "request_id", label: "Request ID" },
-    { key: "vehicle_number", label: "Vehicle Number" },
-    { key: "driver_name", label: "Driver Name" },
-    { key: "driver_contact_number", label: "Driver Contact" },
-    { key: "assigned_coordinator", label: "Coordinator" },
-    { key: "coordinator_mobile_number", label: "Coordinator Mobile" },
-    { key: "current_parking_location", label: "Current Parking Location" },
-    { key: "parked_time", label: "Parked Time" },
-    { key: "pickup_location", label: "Pickup Location" },
-    { key: "via_locations", label: "Via Location(s)" },
-    { key: "delivery_location", label: "Delivery Location" },
-    { key: "driver_contacted", label: "Driver Contacted" },
-    { key: "driver_feedback", label: "Driver Feedback" },
-    { key: "vehicle_parked", label: "Vehicle Parked" },
-    { key: "approver", label: "Approver" },
-    { key: "client_name", label: "Client" },
-    { key: "status", label: "Status" },
-    { key: "created_at", label: "Submitted At" },
-];
-
-function escapeHtml(value) {
-    if (value === null || value === undefined || value === "") return "—";
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-}
-
-function formatCell(incident, key) {
-    if (key === "vehicle_parked") return incident.vehicle_parked ? "Yes" : "No";
-    if (key === "created_at" && incident.created_at) {
-        return new Date(incident.created_at).toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short",
-        });
-    }
-    return escapeHtml(incident[key]);
-}
-
-export function buildIncidentTableHTML(incidents, { standalone = false } = {}) {
-    const headerRow = COLUMNS.map((c) => `<th>${c.label}</th>`).join("");
-
-    const bodyRows = incidents
-        .map((incident) => {
-            const cells = COLUMNS.map(
-                (c) => `<td>${formatCell(incident, c.key)}</td>`
-            ).join("");
-            return `<tr>${cells}</tr>`;
-        })
-        .join("");
-
-    const table = `
-<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;width:100%;font-family:Arial,Helvetica,sans-serif;font-size:13px;">
-  <thead>
-    <tr style="background:#12172a;color:#ffffff;">${headerRow
-            .split("</th>")
-            .filter(Boolean)
-            .map(
-                (h) =>
-                    h.replace(
-                        "<th>",
-                        '<th style="padding:10px 12px;text-align:left;border:1px solid #12172a;white-space:nowrap;">'
-                    ) + "</th>"
-            )
-            .join("")}</tr>
-  </thead>
-  <tbody>
-    ${bodyRows
-            .replace(/<td>/g, '<td style="padding:8px 12px;border:1px solid #e4e8f0;">')
-            .replace(/<tr>/g, '<tr style="background:#ffffff;">')}
-  </tbody>
-</table>`.trim();
-
-    if (!standalone) return table;
-
-    return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8" />
-<title>TOMS Incident Report</title>
-</head>
-<body style="margin:24px;font-family:Arial,Helvetica,sans-serif;">
-<h2 style="font-family:Arial,Helvetica,sans-serif;color:#12172a;margin-bottom:16px;">
-  TOMS Incident Report — Generated ${new Date().toLocaleString()}
-</h2>
-${table}
-</body>
-</html>`;
-}
-
-const DETAIL_FIELDS = [
-    { key: "request_id", label: "Request ID" },
-    { key: "vehicle_number", label: "Vehicle Number" },
-    { key: "driver_name", label: "Driver Name" },
-    { key: "driver_contact_number", label: "Driver Contact Number" },
-    { key: "assigned_coordinator", label: "Assigned Coordinator" },
-    { key: "coordinator_mobile_number", label: "Coordinator Mobile Number" },
-    { key: "current_parking_location", label: "Current Parking Location" },
-    { key: "parked_time", label: "Parked Time" },
-    { key: "pickup_location", label: "Pickup Location" },
-    { key: "via_locations", label: "Via Location(s)" },
-    { key: "delivery_location", label: "Delivery Location" },
-    { key: "driver_contacted", label: "Driver Contacted" },
-    { key: "driver_feedback", label: "Driver Feedback" },
-    { key: "vehicle_parked", label: "Vehicle Parked" },
-    { key: "approver", label: "Approver" },
-    { key: "client_name", label: "Client" },
-    { key: "status", label: "Status" },
-    { key: "created_at", label: "Submitted At" },
-];
-
-
-
-// horizontal compact
-
-const WRAP_FIELDS = new Set([
-    "current_parking_location",
-    "pickup_location",
-    "via_locations",
-    "delivery_location",
-    "driver_feedback",
-]);
-
-export function buildSingleIncidentTableHTML(incident, { standalone = false } = {}) {
-    const headerCells = DETAIL_FIELDS
-        .map(({ label }) => {
-            return `<th style="padding:10px 12px;text-align:left;border:1px solid #12172a;background:#12172a;color:#ffffff;">${escapeHtml(label)}</th>`;
-        })
-        .join("");
-
-    const valueCells = DETAIL_FIELDS
-        .map(({ key }) => {
-            const wrap = WRAP_FIELDS.has(key);
-            const style = wrap
-                ? "padding:8px 12px;border:1px solid #e4e8f0;max-width:200px;white-space:normal;word-wrap:break-word;vertical-align:top;"
-                : "padding:8px 12px;border:1px solid #e4e8f0;white-space:nowrap;vertical-align:top;";
-            return `<td style="${style}">${formatCell(incident, key)}</td>`;
-        })
-        .join("");
-
-    const headerRow = DETAIL_FIELDS
-        .map(({ label, key }) => {
-            const wrap = WRAP_FIELDS.has(key);
-            const style = wrap
-                ? "padding:10px 12px;text-align:left;border:1px solid #12172a;background:#12172a;color:#ffffff;max-width:200px;"
-                : "padding:10px 12px;text-align:left;border:1px solid #12172a;background:#12172a;color:#ffffff;white-space:nowrap;";
-            return `<th style="${style}">${escapeHtml(label)}</th>`;
-        })
-        .join("");
-
-    const table = `
-<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;table-layout:fixed;">
-  <thead>
-    <tr>${headerRow}</tr>
-  </thead>
-  <tbody>
-    <tr style="background:#ffffff;">${valueCells}</tr>
-  </tbody>
-</table>`.trim();
-
-    if (!standalone) return table;
-
-    return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8" />
-<title>TOMS Incident Report — ${escapeHtml(incident.request_id)}</title>
-</head>
-<body style="margin:24px;font-family:Arial,Helvetica,sans-serif;">
-<h2 style="font-family:Arial,Helvetica,sans-serif;color:#12172a;margin-bottom:16px;">
-  Incident Report — ${escapeHtml(incident.request_id)}
-</h2>
-${table}
-</body>
-</html>`;
-}
-
-
-// vertical table  -------------------------------
-
-// export function buildSingleIncidentTableHTML(incident, { standalone = false } = {}) {
-//     const rows = DETAIL_FIELDS.map(({ key, label }) => {
-//         const value = formatCell(incident, key);
-//         return `
-//     <tr>
-//       <td style="padding:9px 14px;border:1px solid #e4e8f0;background:#f4f6fb;font-weight:600;width:220px;">${escapeHtml(label)}</td>
-//       <td style="padding:9px 14px;border:1px solid #e4e8f0;">${value}</td>
-//     </tr>`;
-//     }).join("");
-
-//     const table = `
-// <table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;min-width:520px;">
-//   <tbody>${rows}
-//   </tbody>
-// </table>`.trim();
-
-//     if (!standalone) return table;
-
-//     return `<!DOCTYPE html>
-// <html>
-// <head>
-// <meta charset="UTF-8" />
-// <title>TOMS Incident Report — ${escapeHtml(incident.request_id)}</title>
-// </head>
-// <body style="margin:24px;font-family:Arial,Helvetica,sans-serif;">
-// <h2 style="font-family:Arial,Helvetica,sans-serif;color:#12172a;margin-bottom:16px;">
-//   Incident Report — ${escapeHtml(incident.request_id)}
-// </h2>
-// ${table}
-// </body>
-// </html>`;
-// }
-
-
-// horizontal table  ---------------------------------------
-
-// export function buildSingleIncidentTableHTML(incident, { standalone = false } = {}) {
-//     const headerCells = DETAIL_FIELDS
-//         .map(
-//             ({ label }) =>
-//                 `<th style="padding:10px 12px;text-align:left;border:1px solid #12172a;background:#12172a;color:#ffffff;white-space:nowrap;">${escapeHtml(label)}</th>`
-//         )
-//         .join("");
-
-//     const valueCells = DETAIL_FIELDS
-//         .map(
-//             ({ key }) =>
-//                 `<td style="padding:8px 12px;border:1px solid #e4e8f0;white-space:nowrap;">${formatCell(incident, key)}</td>`
-//         )
-//         .join("");
-
-//     const table = `
-// <table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;">
-//   <thead>
-//     <tr>${headerCells}</tr>
-//   </thead>
-//   <tbody>
-//     <tr style="background:#ffffff;">${valueCells}</tr>
-//   </tbody>
-// </table>`.trim();
-
-//     if (!standalone) return table;
-
-//     return `<!DOCTYPE html>
-// <html>
-// <head>
-// <meta charset="UTF-8" />
-// <title>TOMS Incident Report — ${escapeHtml(incident.request_id)}</title>
-// </head>
-// <body style="margin:24px;font-family:Arial,Helvetica,sans-serif;">
-// <h2 style="font-family:Arial,Helvetica,sans-serif;color:#12172a;margin-bottom:16px;">
-//   Incident Report — ${escapeHtml(incident.request_id)}
-// </h2>
-// ${table}
-// </body>
-// </html>`;
-// }     */

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 :root {
   --canvas: #f4f6fb;
@@ -34,9 +34,16 @@
 
   --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.06);
 
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  /* --- Updated Fonts --- */
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* --- Liquid Glass Variables --- */
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  /* Lowered to 0.4 */
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 
   color-scheme: light;
 }
@@ -54,7 +61,8 @@ body {
 
 body {
   font-family: var(--font-body);
-  background: var(--canvas);
+  /* Adding a subtle gradient background makes the glass effect pop much more than a solid color */
+  background: linear-gradient(135deg, #f4f6fb 0%, #e0e6ed 100%);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 }
@@ -73,4 +81,15 @@ textarea:focus-visible,
 .menu-item:focus-visible {
   outline: 2px solid var(--accent-teal);
   outline-offset: 2px;
+}
+
+/* --- Reusable Transparent Liquid Glass Effect --- */
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 12px;
+  /* Standard rounded corners for modern UI */
 }
