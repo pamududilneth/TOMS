@@ -158,3 +158,48 @@ def delete_supplier(supplier_id: int, db: Session = Depends(get_db), _admin=Depe
     db.delete(supplier)
     db.commit()
     return {"deleted": True}
+
+@router.post("/clients/bulk", response_model=schemas.BulkAddResult)
+def bulk_add_clients(payload: schemas.BulkNamesRequest, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    added, duplicates, failed = [], [], []
+
+    for raw_name in payload.names:
+        name = raw_name.strip()
+        if not name:
+            continue
+        existing = db.query(models.Client).filter(models.Client.name == name).first()
+        if existing:
+            duplicates.append(name)
+            continue
+        try:
+            db.add(models.Client(name=name))
+            db.commit()
+            added.append(name)
+        except Exception:
+            db.rollback()
+            failed.append(name)
+
+    return schemas.BulkAddResult(added=added, duplicates=duplicates, failed=failed)
+
+
+@router.post("/suppliers/bulk", response_model=schemas.BulkAddResult)
+def bulk_add_suppliers(payload: schemas.BulkNamesRequest, db: Session = Depends(get_db), _admin=Depends(require_admin)):
+    added, duplicates, failed = [], [], []
+
+    for raw_name in payload.names:
+        name = raw_name.strip()
+        if not name:
+            continue
+        existing = db.query(models.Supplier).filter(models.Supplier.name == name).first()
+        if existing:
+            duplicates.append(name)
+            continue
+        try:
+            db.add(models.Supplier(name=name))
+            db.commit()
+            added.append(name)
+        except Exception:
+            db.rollback()
+            failed.append(name)
+
+    return schemas.BulkAddResult(added=added, duplicates=duplicates, failed=failed)

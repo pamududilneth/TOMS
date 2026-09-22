@@ -20,7 +20,6 @@ export const emptyIncidentForm = {
     pickup_location: "",
     via_locations: "",
     delivery_location: "",
-    duration: "",
 };
 
 function loadDraft() {

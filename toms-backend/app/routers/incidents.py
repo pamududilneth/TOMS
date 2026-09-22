@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
-from ..utils.excel_export import append_incident_row, EXCEL_PATH
+from ..utils.excel_export import append_incident_row, EXCEL_PATH, _to_local
 from ..utils.client_share import share_incident_with_client, remove_incident_from_client_sheet
 from ..utils.google_sheets_client import append_master_incident_row, delete_master_incident_row
 from ..utils.auth import require_admin, get_current_user
@@ -37,6 +37,35 @@ def _visible_query(db: Session, current_user: models.User):
     if current_user.role != "admin":
         query = query.filter(models.Incident.owner_id == current_user.id)
     return query
+
+
+def _calculate_duration(stopped_date: str, stopped_time: str, reported_dt) -> str:
+    if not stopped_date or not stopped_time or not reported_dt:
+        return ""
+
+    try:
+        stopped_dt = datetime.strptime(f"{stopped_date} {stopped_time}", "%Y-%m-%d %H:%M")
+        reported_local = _to_local(reported_dt).replace(tzinfo=None)
+
+        diff = reported_local - stopped_dt
+        total_minutes = int(diff.total_seconds() // 60)
+
+        if total_minutes < 0:
+            return "N/A"  # reported before the stop even happened — flag rather than guess
+
+        days, rem = divmod(total_minutes, 1440)
+        hours, minutes = divmod(rem, 60)
+
+        parts = []
+        if days:
+            parts.append(f"{days}d")
+        if hours:
+            parts.append(f"{hours}h")
+        parts.append(f"{minutes}m")
+
+        return " ".join(parts)
+    except (ValueError, AttributeError):
+        return ""
 
 
 @router.get("/", response_model=list[schemas.IncidentOut])
@@ -94,6 +123,10 @@ def create_incident(
     db.flush()  # Assigns incident.id without committing the transaction yet
     
     incident.request_id = f"VSR{incident.id:03d}"
+    
+    # Compute the duration dynamically and save it to the DB model instance
+    # incident.duration = _calculate_duration(incident.stopped_time, incident.created_at)
+    incident.duration = _calculate_duration(incident.stopped_date, incident.stopped_time, incident.created_at)
 
     try:
         append_incident_row(incident, username=username, customer_name=customer_name)
@@ -108,8 +141,8 @@ def create_incident(
     row_data = [
         incident.request_id,
         username,
-        incident.created_at.strftime("%Y-%m-%d") if incident.created_at else "",
-        incident.created_at.strftime("%H:%M") if incident.created_at else "",
+        _to_local(incident.created_at).strftime("%Y-%m-%d"),
+        _to_local(incident.created_at).strftime("%H:%M"),
         customer_name,
         incident.stop_category,
         incident.job_no,

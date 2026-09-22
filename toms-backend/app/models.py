@@ -111,6 +111,8 @@ class Breakdown(Base):
     involvement_of_police = Column(String, nullable=True)
     legal_impact = Column(String, nullable=True)
 
+    vehicle_type = Column(String, nullable=True) # add vehicle type
+
     location = Column(String, nullable=True)  # where the breakdown/accident happened
     reason = Column(String, nullable=True)
 

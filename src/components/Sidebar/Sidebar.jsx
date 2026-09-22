@@ -22,14 +22,14 @@ function Sidebar() {
 
     // 1. Remove "Clients" from the default menu array so staff won't see it
     const menu = [
-        { title: "Stop Management", icon: <FiAlertTriangle />, to: "/stop-management" },
+        { title: "Unplanned Stops", icon: <FiAlertTriangle />, to: "/stop-management" },
         { title: "Breakdowns/Accidents", icon: <FiClipboard />, to: "/breakdowns" },
         { title: "Reports", icon: <FiFileText />, to: "/reports" },
     ];
 
-    // 2. Add "Clients" and "Settings" to the menu ONLY if the user is an admin
+    // 2. Add "Customers" and "Settings" to the menu ONLY if the user is an admin
     if (user?.role === "admin") {
-        menu.push({ title: "Clients", icon: <FiUsers />, to: "/clients" });
+        menu.push({ title: "Customers", icon: <FiUsers />, to: "/clients" });
         menu.push({ title: "Settings", icon: <FiSettings />, to: "/settings" });
     }
 

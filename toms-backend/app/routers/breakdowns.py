@@ -376,7 +376,7 @@ def create_breakdown(
         reported_month, time_for_reporting,
         breakdown.job_no, "",
         customer.name if customer else "",
-        breakdown.vehicle_number, breakdown.driver,
+        breakdown.vehicle_number, breakdown.vehicle_type, breakdown.driver,
         supplier.name if supplier else "",
         breakdown.category, breakdown.category_detail, breakdown.injury_category,
         breakdown.root_cause, breakdown.shipment_content, breakdown.third_party_life,

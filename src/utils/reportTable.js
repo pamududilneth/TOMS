@@ -36,6 +36,7 @@ const BREAKDOWN_COLUMNS = [
     { key: "job_no", label: "Job No", width: 130 },
     { key: "customer_name", label: "Customer", width: 150 },
     { key: "vehicle_number", label: "Vehicle No", width: 120 },
+    { key: "vehicle_type", label: "Vehicle Type", width: 150 },
     { key: "driver", label: "Driver", width: 130 },
     { key: "supplier_name", label: "Supplier", width: 130 },
     { key: "category", label: "Category", width: 130 },

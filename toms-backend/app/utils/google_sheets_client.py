@@ -74,7 +74,7 @@ def append_incident_row(sheet_title: str, row_values: list):
 BREAKDOWN_HEADERS = [
     "Record ID", "Data Entered by", "Incident Date/Time", "Incident Month",
     "Reported Date/Time to the Compliance Team", "Reported Month", "Time for Reporting",
-    "Job No", "Incident Reference No by Compliance Team", "Customer", "Vehicle No",
+    "Job No", "Incident Reference No by Compliance Team", "Customer", "Vehicle No", "Vehicle Type",
     "Driver", "Supplier", "Category", "Category Detail", "Injury Category", "Route Cause",
     "Shipment Content (Goods)", "Third Party Life", "Driver/Assistant Life", "Vehicle",
     "Third Party Property", "Delivery on Time", "Combined Result", "Severity Level",
@@ -120,7 +120,7 @@ def get_or_create_master_sheet(sheet_title: str, headers: list):
 
 def append_breakdown_row(row_values: list):
     """Appends a new breakdown to the master Google Sheet."""
-    sheet_name = "TOMS - Vehicle Breakdowns Master"
+    sheet_name = "Breakdowns_Accident"
     sh = get_or_create_master_sheet(sheet_name, BREAKDOWN_HEADERS)
     ws = sh.sheet1
     ws.append_row(row_values, value_input_option="USER_ENTERED")
@@ -135,7 +135,7 @@ def append_stop_management_row(row_values: list):
 
 def append_master_incident_row(row_values: list):
     """Appends a new incident to the centralized Master Google Sheet."""
-    sheet_name = "TOMS - Incidents Master"
+    sheet_name = "Unplanned Stop"
     sh = get_or_create_master_sheet(sheet_name, INCIDENT_HEADERS)
     ws = sh.sheet1
     ws.append_row(row_values, value_input_option="USER_ENTERED")

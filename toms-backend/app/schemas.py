@@ -23,7 +23,7 @@ class IncidentBase(BaseModel):
     job_no: Optional[str] = None
     stopped_date: Optional[str] = None
     stopped_time: Optional[str] = None
-    duration: Optional[str] = None
+    # duration removed from Base so it's not expected in Create payloads
 
 
 class IncidentCreate(IncidentBase):
@@ -49,7 +49,6 @@ class IncidentUpdate(BaseModel):
     job_no: Optional[str] = None
     stopped_date: Optional[str] = None
     stopped_time: Optional[str] = None
-    duration: Optional[str] = None
 
 
 class IncidentOut(IncidentBase):
@@ -58,6 +57,7 @@ class IncidentOut(IncidentBase):
     owner_id: Optional[int] = None
     owner_name: Optional[str] = None
     customer_name: Optional[str] = None
+    duration: Optional[str] = None  # Computed display field
     created_at: datetime
 
     class Config:
@@ -107,6 +107,16 @@ class CoordinatorOut(CoordinatorCreate):
     class Config:
         from_attributes = True
 
+# ---> BULK ADD SCHEMAS
+class BulkNamesRequest(BaseModel):
+    names: list[str]
+
+
+class BulkAddResult(BaseModel):
+    added: list[str]
+    duplicates: list[str]
+    failed: list[str]
+
 
 # ---> REPLACED BREAKDOWN SCHEMAS
 class BreakdownBase(BaseModel):
@@ -114,6 +124,7 @@ class BreakdownBase(BaseModel):
     job_no: Optional[str] = None
     customer_id: Optional[int] = None
     vehicle_number: str
+    vehicle_type: Optional[str] = None
     driver: Optional[str] = None
     supplier_id: Optional[int] = None
     category: Optional[str] = None

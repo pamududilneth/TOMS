@@ -1,0 +1,36 @@
+.form-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 24px 32px 40px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+}
+
+.form-footer-actions .btn-outline,
+.form-footer-actions .btn-dark {
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.form-footer-actions .btn-outline {
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-primary);
+}
+
+.form-footer-actions .btn-dark {
+    border: none;
+    background: var(--text-primary);
+    color: #fff;
+    font-weight: 600;
+}
+
+.form-footer-actions .btn-dark:disabled,
+.form-footer-actions .btn-outline:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

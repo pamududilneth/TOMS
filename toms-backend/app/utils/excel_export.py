@@ -1,9 +1,9 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from openpyxl import Workbook, load_workbook
 
 EXCEL_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
-EXCEL_PATH = os.path.join(EXCEL_DIR, "incidents.xlsx")
+EXCEL_PATH = os.path.join(EXCEL_DIR, "Unplanned Stop.xlsx")
 
 HEADERS = [
     "Key",
@@ -31,6 +31,16 @@ HEADERS = [
     "Duration",
 ]
 
+# Sri Lanka is UTC+5:30 — adjust if your team is in a different timezone
+LOCAL_TZ_OFFSET = timedelta(hours=5, minutes=30)
+
+def _to_local(dt):
+    if dt is None:
+        return datetime.now()
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone(LOCAL_TZ_OFFSET))
+
 
 def _ensure_workbook():
     os.makedirs(EXCEL_DIR, exist_ok=True)
@@ -52,14 +62,14 @@ def _combined_datetime(date_str, time_str):
         return f"{date_str} {time_str}"
 
 
-def append_incident_row(incident, username: str, customer_name: str = ""):
+def append_incident_row(incident, username: str, customer_name: str = "", duration: str = ""):
     _ensure_workbook()
 
     try:
         wb = load_workbook(EXCEL_PATH)
         ws = wb["Incidents"]
 
-        reported_at = incident.created_at or datetime.now()
+        reported_at = _to_local(incident.created_at)
 
         ws.append([
             incident.request_id,

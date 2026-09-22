@@ -7,6 +7,7 @@ export const emptyBreakdownForm = {
     job_no: "",
     customer_id: "",
     vehicle_number: "",
+    vehicle_type: "",
     driver: "",
     supplier_id: "",
     category: "",

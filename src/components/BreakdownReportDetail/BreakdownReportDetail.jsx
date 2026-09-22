@@ -7,7 +7,6 @@ import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
 import { FiPrinter, FiDownload, FiCopy, FiEdit2, FiTrash2, FiBriefcase, FiAlertTriangle, FiCheckSquare, FiTruck } from "react-icons/fi";
 
-
 function formatDateTime(value) {
     if (!value) return "—";
     return new Date(value).toLocaleString(undefined, {
@@ -142,6 +141,7 @@ function BreakdownReportDetail({ breakdown, onDeleted }) {
                     <ReportField label="Time for Reporting" value={breakdown.time_for_reporting} />
                     <ReportField label="Customer" value={breakdown.customer_name} />
                     <ReportField label="Vehicle No" value={breakdown.vehicle_number} />
+                    <ReportField label="Vehicle Type" value={breakdown.vehicle_type} />
                     <ReportField label="Driver" value={breakdown.driver} />
                     <ReportField label="Supplier" value={breakdown.supplier_name} />
                 </div>

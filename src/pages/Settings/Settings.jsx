@@ -4,6 +4,7 @@ import "./Settings.css";
 import UsersPanel from "../../components/UsersPanel/UsersPanel";
 import Topbar from "../../components/Topbar/Topbar";
 import SettingsTable from "../../components/SettingsTable/SettingsTable";
+import BulkAddPanel from "../../components/BulkAddPanel/BulkAddPanel";
 import { api } from "../../lib/api";
 
 function Settings() {
@@ -49,16 +50,19 @@ function Settings() {
     }
 
     async function handleAddClient(values) {
-        await api.createClient({
-            name: values.name,
-            email: values.email || null,
-        });
+        await api.createClient({ name: values.name });
         loadClients();
     }
 
     async function handleDeleteClient(id) {
         await api.deleteClient(id);
         loadClients();
+    }
+
+    async function handleBulkAddClients(names) {
+        const result = await api.bulkAddClients(names);
+        loadClients();
+        return result;
     }
 
     async function handleAddStopCategory(values) {
@@ -81,6 +85,12 @@ function Settings() {
         loadSuppliers();
     }
 
+    async function handleBulkAddSuppliers(names) {
+        const result = await api.bulkAddSuppliers(names);
+        loadSuppliers();
+        return result;
+    }
+
     return (
         <>
             <Topbar title="Settings" />
@@ -88,6 +98,7 @@ function Settings() {
             <div className="settings-page">
 
                 <UsersPanel />
+
                 <SettingsTable
                     title="Coordinators"
                     columns={[
@@ -103,19 +114,14 @@ function Settings() {
                     ]}
                 />
 
+                <BulkAddPanel onSubmit={handleBulkAddClients} label="customers" />
                 <SettingsTable
-                    title="Clients"
-                    columns={[
-                        { key: "name", label: "Name" },
-                        { key: "email", label: "Email" },
-                    ]}
+                    title="Customers"
+                    columns={[{ key: "name", label: "Name" }]}
                     rows={clients}
                     onAdd={handleAddClient}
                     onDelete={handleDeleteClient}
-                    addFields={[
-                        { key: "name", placeholder: "Client name", required: true },
-                        { key: "email", placeholder: "Email (for report sharing)", type: "email" },
-                    ]}
+                    addFields={[{ key: "name", placeholder: "Customer name", required: true }]}
                 />
 
                 <SettingsTable
@@ -127,6 +133,7 @@ function Settings() {
                     addFields={[{ key: "name", placeholder: "Category name", required: true }]}
                 />
 
+                <BulkAddPanel onSubmit={handleBulkAddSuppliers} label="suppliers" />
                 <SettingsTable
                     title="Suppliers"
                     columns={[{ key: "name", label: "Name" }]}

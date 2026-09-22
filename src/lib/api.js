@@ -125,4 +125,6 @@ export const api = {
     createSupplier: (data) => request("/suppliers", { method: "POST", body: JSON.stringify(data) }),
     deleteSupplier: (id) => request(`/suppliers/${id}`, { method: "DELETE" }),
     createBreakdown: (data) => request("/breakdowns/", { method: "POST", body: JSON.stringify(data) }),
+    bulkAddClients: (names) => request("/clients/bulk", { method: "POST", body: JSON.stringify({ names }) }),
+    bulkAddSuppliers: (names) => request("/suppliers/bulk", { method: "POST", body: JSON.stringify({ names }) }),
 };

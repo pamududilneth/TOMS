@@ -3,7 +3,7 @@ from datetime import datetime
 from openpyxl import Workbook, load_workbook
 
 EXCEL_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
-EXCEL_PATH = os.path.join(EXCEL_DIR, "breakdowns.xlsx")
+EXCEL_PATH = os.path.join(EXCEL_DIR, "Breakdowns_Accident.xlsx")
 
 HEADERS = [
     "Record ID",
@@ -17,6 +17,7 @@ HEADERS = [
     "Incident Reference No by Compliance Team",
     "Customer",
     "Vehicle No",
+    "Vehicle Type",
     "Driver",
     "Supplier",
     "Category",
@@ -93,6 +94,7 @@ def append_breakdown_row(
             "",                                 # Incident Reference No by Compliance Team (manual)
             customer_name,                      # Customer
             breakdown.vehicle_number,           # Vehicle No
+            breakdown.vehicle_type,             # Vehicle Type
             breakdown.driver,                   # Driver
             supplier_name,                      # Supplier
             breakdown.category,                 # Category
@@ -105,9 +107,9 @@ def append_breakdown_row(
             breakdown.vehicle_impact,           # Vehicle
             breakdown.third_party_property,     # Third Party Property
             breakdown.delivery_on_time,         # Delivery on Time
-            "TBA",                              # Combined Result (manual)
-            "TBA",                              # Severity Level (manual)
-            "TBA",                              # Severity Classification (manual)
+            "",                              # Combined Result (manual)
+            "",                              # Severity Level (manual)
+            "",                              # Severity Classification (manual)
             breakdown.involvement_of_police,    # Involvement of Police
             breakdown.legal_impact,             # Legal Impact
             "", "", "", "", "", "", "", "", "",  # Customer Claim ... Action Closing Date

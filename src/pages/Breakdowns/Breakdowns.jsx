@@ -6,6 +6,7 @@ import PageToolbar from "../../components/PageToolbar/PageToolbar";
 import FormSection from "../../components/FormSection/FormSection";
 import FormField from "../../components/FormField/FormField";
 import SearchableSelect from "../../components/SearchableSelect/SearchableSelect";
+import FormFooterActions from "../../components/FormFooterActions/FormFooterActions";
 import BreakdownSuccessModal from "../../components/BreakdownSuccessModal/BreakdownSuccessModal";
 import { api } from "../../lib/api";
 import { useBreakdownDraft } from "../../context/BreakdownDraftContext";
@@ -19,6 +20,12 @@ const AFFECTED_OPTIONS = ["Affected", "Not affected"];
 const VEHICLE_OPTIONS = ["Affected", "Not affected", "Need a backup team /vehicle"];
 const DELIVERY_OPTIONS = ["Can meet", "Cannot meet"];
 const YES_NO_OPTIONS = ["Yes", "No"];
+const VEHICLE_TYPE_OPTIONS = [
+    "10.5' - FLAT PACK", "12.5' - FLAT PACK", "14.5' - FLAT PACK", "14.5 FT REEFER",
+    "16.5' - FLAT PACK", "18.5' - FLAT PACK", "18.5 FT - CAGE", "20' - FLAT PACK",
+    "20 FEET REEFER", "22 FT - CAGE", "40' - FLAT PACK", "45' - FLAT PACK",
+    "7.5' - FLAT PACK", "8.5' - FLAT PACK", "CAR", "MOTOR BIKE", "THREE WHEEL", "VAN",
+];
 
 function validateJobNo(value) {
     if (!value) return null;
@@ -36,6 +43,7 @@ function getRequiredFields(form) {
         { key: "job_no", label: "Job No" },
         { key: "customer_id", label: "Customer" },
         { key: "vehicle_number", label: "Vehicle No" },
+        { key: "vehicle_type", label: "Vehicle Type" },
         { key: "driver", label: "Driver" },
         { key: "supplier_id", label: "Supplier" },
         { key: "category", label: "Category" },
@@ -158,9 +166,6 @@ function Breakdowns() {
             <PageToolbar
                 crumbs={["Operational Control", "Breakdowns/Accident"]}
                 subtitle="New Breakdown/Accident Entry"
-                onDiscard={handleDiscard}
-                onSubmit={handleSubmit}
-                submitting={submitting}
             />
 
             {error && <p className="form-error">{error}</p>}
@@ -217,6 +222,15 @@ function Breakdowns() {
                             value={form.vehicle_number}
                             error={fieldErrors.vehicle_number}
                             onChange={(e) => updateField("vehicle_number", e.target.value)}
+                        />
+                        <SearchableSelect
+                            label="Vehicle Type"
+                            required
+                            placeholder="Select vehicle type"
+                            options={VEHICLE_TYPE_OPTIONS}
+                            value={form.vehicle_type}
+                            error={fieldErrors.vehicle_type}
+                            onChange={(val) => updateField("vehicle_type", val)}
                         />
                         <FormField
                             label="Driver"
@@ -363,10 +377,18 @@ function Breakdowns() {
 
             </div>
 
+            <FormFooterActions
+                onDiscard={handleDiscard}
+                onSubmit={handleSubmit}
+                submitting={submitting}
+                submitLabel="Submit Breakdown/Accident Report"
+            />
+
             <BreakdownSuccessModal
                 breakdown={submittedBreakdown}
                 onClose={() => setSubmittedBreakdown(null)}
             />
+
         </>
     );
 }

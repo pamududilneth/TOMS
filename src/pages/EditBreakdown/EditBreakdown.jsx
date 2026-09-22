@@ -19,6 +19,12 @@ const VEHICLE_OPTIONS = ["Affected", "Not affected", "Need a backup team /vehicl
 const DELIVERY_OPTIONS = ["Can meet", "Cannot meet"];
 const YES_NO_OPTIONS = ["Yes", "No"];
 const STATUS_OPTIONS = ["submitted", "in_progress", "resolved"];
+const VEHICLE_TYPE_OPTIONS = [
+    "10.5' - FLAT PACK", "12.5' - FLAT PACK", "14.5' - FLAT PACK", "14.5 FT REEFER",
+    "16.5' - FLAT PACK", "18.5' - FLAT PACK", "18.5 FT - CAGE", "20' - FLAT PACK",
+    "20 FEET REEFER", "22 FT - CAGE", "40' - FLAT PACK", "45' - FLAT PACK",
+    "7.5' - FLAT PACK", "8.5' - FLAT PACK", "CAR", "MOTOR BIKE", "THREE WHEEL", "VAN",
+];
 
 function validateJobNo(value) {
     if (!value) return null;
@@ -74,6 +80,7 @@ function EditBreakdown() {
                 job_no: form.job_no,
                 customer_id: form.customer_id ? Number(form.customer_id) : null,
                 vehicle_number: form.vehicle_number,
+                vehicle_type: form.vehicle_type,
                 driver: form.driver,
                 supplier_id: form.supplier_id ? Number(form.supplier_id) : null,
                 category: form.category,
@@ -174,8 +181,15 @@ function EditBreakdown() {
                         <FormField
                             label="Vehicle No"
                             required
-                            value={form.vehicle_number}
+                            value={form.vehicle_number || ""}
                             onChange={(e) => updateField("vehicle_number", e.target.value)}
+                        />
+                        <SearchableSelect
+                            label="Vehicle Type"
+                            placeholder="Select vehicle type"
+                            options={VEHICLE_TYPE_OPTIONS}
+                            value={form.vehicle_type || ""}
+                            onChange={(val) => updateField("vehicle_type", val)}
                         />
                         <FormField
                             label="Driver"

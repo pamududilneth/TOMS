@@ -9,6 +9,7 @@ import SearchableSelect from "../../components/SearchableSelect/SearchableSelect
 import SegmentedToggle from "../../components/SegmentedToggle/SegmentedToggle";
 import ToggleSwitch from "../../components/ToggleSwitch/ToggleSwitch";
 import SubmitSuccessModal from "../../components/SubmitSuccessModal/SubmitSuccessModal";
+import FormFooterActions from "../../components/FormFooterActions/FormFooterActions";
 import { api } from "../../lib/api";
 import { useIncidentDraft } from "../../context/IncidentDraftContext";
 
@@ -47,7 +48,6 @@ const REQUIRED_FIELDS = [
     { key: "stopped_time", label: "Vehicle Stopped Time" },
     { key: "pickup_location", label: "Pickup Location" },
     { key: "delivery_location", label: "Delivery Location" },
-    { key: "duration", label: "Duration" },
 ];
 
 function IncidentEntry() {
@@ -182,9 +182,6 @@ function IncidentEntry() {
             <PageToolbar
                 crumbs={["Operational Control", "Unplanned Stop Management"]}
                 subtitle="New Incident Entry"
-                onDiscard={handleDiscard}
-                onSubmit={handleSubmit}
-                submitting={submitting}
             />
 
             {error && <p className="form-error">{error}</p>}
@@ -299,14 +296,6 @@ function IncidentEntry() {
                             onChange={(e) => updateField("current_parking_location", e.target.value)}
                         />
                         <FormField
-                            label="Duration"
-                            required
-                            placeholder="e.g. 2h 30m"
-                            value={form.duration}
-                            error={fieldErrors.duration}
-                            onChange={(e) => updateField("duration", e.target.value)}
-                        />
-                        <FormField
                             label="Vehicle Stopped Date"
                             required
                             type="date"
@@ -370,6 +359,13 @@ function IncidentEntry() {
                     />
                 </FormSection>
             </div>
+
+            <FormFooterActions
+                onDiscard={handleDiscard}
+                onSubmit={handleSubmit}
+                submitting={submitting}
+                submitLabel="Submit Incident Report"
+            />
 
             <SubmitSuccessModal
                 incident={submittedIncident}
