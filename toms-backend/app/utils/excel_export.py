@@ -8,8 +8,7 @@ EXCEL_PATH = os.path.join(EXCEL_DIR, "Unplanned Stop.xlsx")
 HEADERS = [
     "Key",
     "User",
-    "Reported Date by the Call Centre",
-    "Reported Time by the Call Centre",
+    "Reported Date/Time by the Call Centre",
     "Customer",
     "Vehicle Stop Category",
     "Job No",
@@ -22,9 +21,7 @@ HEADERS = [
     "Driver Feedback - If Contacted",
     "Vehicle Parking with Goods",
     "Vehicle Stopped Location",
-    "Vehicle Stopped Date",
-    "Vehicle Stopped Time",
-    "Vehicle Stopped Date & Time - V2",
+    "Vehicle Stopped Date & Time",
     "Pickup Location",
     "Via Location/s",
     "Delivery Location",
@@ -33,6 +30,7 @@ HEADERS = [
 
 # Sri Lanka is UTC+5:30 — adjust if your team is in a different timezone
 LOCAL_TZ_OFFSET = timedelta(hours=5, minutes=30)
+
 
 def _to_local(dt):
     if dt is None:
@@ -52,7 +50,7 @@ def _ensure_workbook():
         wb.save(EXCEL_PATH)
 
 
-def _combined_datetime(date_str, time_str):
+def _combined_stopped_datetime(date_str, time_str):
     if not date_str or not time_str:
         return ""
     try:
@@ -70,12 +68,12 @@ def append_incident_row(incident, username: str, customer_name: str = "", durati
         ws = wb["Incidents"]
 
         reported_at = _to_local(incident.created_at)
+        reported_datetime_str = f"{reported_at.strftime('%d-%m-%Y')} {reported_at.strftime('%H:%M:%S')}"
 
         ws.append([
             incident.request_id,
             username,
-            reported_at.strftime("%Y-%m-%d"),
-            reported_at.strftime("%H:%M"),
+            reported_datetime_str,
             customer_name,
             incident.stop_category,
             incident.job_no,
@@ -88,18 +86,16 @@ def append_incident_row(incident, username: str, customer_name: str = "", durati
             incident.driver_feedback,
             "Yes" if incident.vehicle_parked else "No",
             incident.current_parking_location,
-            incident.stopped_date,
-            incident.stopped_time,
-            _combined_datetime(incident.stopped_date, incident.stopped_time),
+            _combined_stopped_datetime(incident.stopped_date, incident.stopped_time),
             incident.pickup_location,
             incident.via_locations,
             incident.delivery_location,
-            incident.duration,
+            duration,
         ])
 
         wb.save(EXCEL_PATH)
 
     except PermissionError as exc:
         raise RuntimeError(
-            "Could not write to incidents.xlsx — close the file in Excel and try again."
+            "Could not write to Unplanned Stop.xlsx — close the file in Excel and try again."
         ) from exc

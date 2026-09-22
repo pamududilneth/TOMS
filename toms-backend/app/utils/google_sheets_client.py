@@ -16,8 +16,7 @@ def _get_client():
 INCIDENT_HEADERS = [
     "Key",
     "User",
-    "Reported Date by the Call Centre",
-    "Reported Time by the Call Centre",
+    "Reported Date/Time by the Call Centre",
     "Customer",
     "Vehicle Stop Category",
     "Job No",
@@ -30,9 +29,7 @@ INCIDENT_HEADERS = [
     "Driver Feedback - If Contacted",
     "Vehicle Parking with Goods",
     "Vehicle Stopped Location",
-    "Vehicle Stopped Date",
-    "Vehicle Stopped Time",
-    "Vehicle Stopped Date & Time - V2",
+    "Vehicle Stopped Date & Time",
     "Pickup Location",
     "Via Location/s",
     "Delivery Location",
@@ -50,7 +47,7 @@ def get_or_create_client_sheet(sheet_title: str, client_email: str | None):
         ws = sh.sheet1
         ws.update("A1", [INCIDENT_HEADERS])
         # ---> UPDATED: Changed from A1:O1 to A1:W1 to accommodate all 23 columns
-        ws.format("A1:W1", {"textFormat": {"bold": True}})
+        ws.format("A1:T1", {"textFormat": {"bold": True}})
         created = True
 
     if created and client_email:

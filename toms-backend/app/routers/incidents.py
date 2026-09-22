@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
-from ..utils.excel_export import append_incident_row, EXCEL_PATH, _to_local
+from ..utils.excel_export import append_incident_row, EXCEL_PATH, _to_local, _combined_stopped_datetime
 from ..utils.client_share import share_incident_with_client, remove_incident_from_client_sheet
 from ..utils.google_sheets_client import append_master_incident_row, delete_master_incident_row
 from ..utils.auth import require_admin, get_current_user
@@ -22,13 +22,13 @@ def generate_request_id(db: Session) -> str:
 def _attach_display_names(incident: models.Incident, db: Session) -> models.Incident:
     owner = db.query(models.User).filter(models.User.id == incident.owner_id).first()
     incident.owner_name = (owner.full_name or owner.username) if owner else None
-    
+
     if incident.customer_id:
         customer = db.query(models.Client).filter(models.Client.id == incident.customer_id).first()
         incident.customer_name = customer.name if customer else None
     else:
         incident.customer_name = None
-        
+
     return incident
 
 
@@ -40,6 +40,11 @@ def _visible_query(db: Session, current_user: models.User):
 
 
 def _calculate_duration(stopped_date: str, stopped_time: str, reported_dt) -> str:
+    """
+    Returns total elapsed time as HH:MM:SS — hours can exceed 24 for
+    multi-day gaps, which keeps it a single, easily-calculable value
+    rather than a mixed "Xd Xh Ym" string.
+    """
     if not stopped_date or not stopped_time or not reported_dt:
         return ""
 
@@ -48,22 +53,15 @@ def _calculate_duration(stopped_date: str, stopped_time: str, reported_dt) -> st
         reported_local = _to_local(reported_dt).replace(tzinfo=None)
 
         diff = reported_local - stopped_dt
-        total_minutes = int(diff.total_seconds() // 60)
+        total_seconds = int(diff.total_seconds())
 
-        if total_minutes < 0:
-            return "N/A"  # reported before the stop even happened — flag rather than guess
+        if total_seconds < 0:
+            return "N/A"
 
-        days, rem = divmod(total_minutes, 1440)
-        hours, minutes = divmod(rem, 60)
+        hours, rem = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(rem, 60)
 
-        parts = []
-        if days:
-            parts.append(f"{days}d")
-        if hours:
-            parts.append(f"{hours}h")
-        parts.append(f"{minutes}m")
-
-        return " ".join(parts)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
     except (ValueError, AttributeError):
         return ""
 
@@ -92,7 +90,7 @@ def export_excel(current_user: models.User = Depends(get_current_user)):
     return FileResponse(
         EXCEL_PATH,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        filename="incidents.xlsx",
+        filename="Unplanned Stop.xlsx",
     )
 
 
@@ -105,7 +103,6 @@ def create_incident(
     data = payload.model_dump()
     client_ids = data.pop("client_ids", [])
 
-    # We must resolve these names before hitting Excel so the 23-column export works
     customer_name = ""
     if data.get("customer_id"):
         customer = db.query(models.Client).filter(models.Client.id == data["customer_id"]).first()
@@ -118,31 +115,34 @@ def create_incident(
         owner_id=current_user.id,
         **data,
     )
-    
+
     db.add(incident)
-    db.flush()  # Assigns incident.id without committing the transaction yet
-    
+    db.flush()  # assigns incident.id without committing yet
+
     incident.request_id = f"VSR{incident.id:03d}"
-    
-    # Compute the duration dynamically and save it to the DB model instance
-    # incident.duration = _calculate_duration(incident.stopped_time, incident.created_at)
     incident.duration = _calculate_duration(incident.stopped_date, incident.stopped_time, incident.created_at)
 
     try:
-        append_incident_row(incident, username=username, customer_name=customer_name)
+        append_incident_row(
+            incident,
+            username=username,
+            customer_name=customer_name,
+            duration=incident.duration,
+        )
     except RuntimeError as exc:
-        db.rollback()  # Undo the flush — nothing gets saved to the DB if Excel fails
+        db.rollback()
         raise HTTPException(status_code=409, detail=str(exc))
 
     db.commit()
     db.refresh(incident)
 
-    # Everything below only runs after both DB + Excel succeeded
+    reported_at = _to_local(incident.created_at)
+    reported_datetime_str = f"{reported_at.strftime('%d-%m-%Y')} {reported_at.strftime('%H:%M:%S')}"
+
     row_data = [
         incident.request_id,
         username,
-        _to_local(incident.created_at).strftime("%Y-%m-%d"),
-        _to_local(incident.created_at).strftime("%H:%M"),
+        reported_datetime_str,
         customer_name,
         incident.stop_category,
         incident.job_no,
@@ -155,9 +155,7 @@ def create_incident(
         incident.driver_feedback,
         "Yes" if incident.vehicle_parked else "No",
         incident.current_parking_location,
-        incident.stopped_date,
-        incident.stopped_time,
-        f"{incident.stopped_date} {incident.stopped_time}" if incident.stopped_date else "",
+        _combined_stopped_datetime(incident.stopped_date, incident.stopped_time),
         incident.pickup_location,
         incident.via_locations,
         incident.delivery_location,
@@ -191,7 +189,7 @@ def get_incident(
     incident = _visible_query(db, current_user).filter(models.Incident.id == incident_id).first()
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
-    
+
     return _attach_display_names(incident, db)
 
 
@@ -211,7 +209,7 @@ def update_incident(
 
     db.commit()
     db.refresh(incident)
-    
+
     return _attach_display_names(incident, db)
 
 

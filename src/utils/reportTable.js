@@ -1,8 +1,7 @@
 const DETAIL_FIELDS = [
     { key: "request_id", label: "Key", width: 100 },
     { key: "owner_name", label: "User", width: 130 },
-    { key: "reported_date", label: "Reported Date by the Call Centre", width: 150 },
-    { key: "reported_time", label: "Reported Time by the Call Centre", width: 150 },
+    { key: "reported_datetime", label: "Reported Date/Time by the Call Centre", width: 190 },
     { key: "customer_name", label: "Customer", width: 150 },
     { key: "stop_category", label: "Vehicle Stop Category", width: 180 },
     { key: "job_no", label: "Job No", width: 120 },
@@ -15,13 +14,11 @@ const DETAIL_FIELDS = [
     { key: "driver_feedback", label: "Driver Feedback - If Contacted", width: 220 },
     { key: "vehicle_parked", label: "Vehicle Parking with Goods", width: 170 },
     { key: "current_parking_location", label: "Vehicle Stopped Location", width: 200 },
-    { key: "stopped_date", label: "Vehicle Stopped Date", width: 150 },
-    { key: "stopped_time", label: "Vehicle Stopped Time", width: 150 },
-    { key: "stopped_datetime_v2", label: "Vehicle Stopped Date & Time - V2", width: 190 },
+    { key: "stopped_datetime", label: "Vehicle Stopped Date & Time", width: 190 },
     { key: "pickup_location", label: "Pickup Location", width: 160 },
     { key: "via_locations", label: "Via Location/s", width: 160 },
     { key: "delivery_location", label: "Delivery Location", width: 160 },
-    { key: "duration", label: "Duration", width: 120 },
+    { key: "duration", label: "Duration", width: 110 },
 ];
 
 const COLUMNS = DETAIL_FIELDS;
@@ -63,13 +60,11 @@ function escapeHtml(value) {
 
 function formatCell(incident, key) {
     if (key === "vehicle_parked") return incident.vehicle_parked ? "Yes" : "No";
-    if (key === "reported_date" && incident.created_at) {
-        return new Date(incident.created_at).toLocaleDateString();
+    if (key === "reported_datetime" && incident.created_at) {
+        const d = new Date(incident.created_at);
+        return `${d.toLocaleDateString()} ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
     }
-    if (key === "reported_time" && incident.created_at) {
-        return new Date(incident.created_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-    }
-    if (key === "stopped_datetime_v2") {
+    if (key === "stopped_datetime") {
         if (!incident.stopped_date || !incident.stopped_time) return "—";
         return `${incident.stopped_date} ${incident.stopped_time}`;
     }
