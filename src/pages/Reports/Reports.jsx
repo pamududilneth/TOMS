@@ -8,7 +8,7 @@ import ReportDetail from "../../components/ReportDetail/ReportDetail";
 import BreakdownListItem from "../../components/BreakdownListItem/BreakdownListItem";
 import BreakdownReportDetail from "../../components/BreakdownReportDetail/BreakdownReportDetail";
 import { api } from "../../lib/api";
-import { buildIncidentTableHTML, buildBreakdownTableHTML } from "../../utils/reportTable";
+// import { buildIncidentTableHTML, buildBreakdownTableHTML } from "../../utils/reportTable";
 import { FiSearch, FiRefreshCw, FiDownload, FiCopy } from "react-icons/fi";
 
 function Reports() {
@@ -192,9 +192,21 @@ function Reports() {
 
                 <div className="reports-detail-panel">
                     {reportType === "incidents" ? (
-                        <ReportDetail incident={selectedRecord} />
+                        <ReportDetail
+                            incident={selectedRecord}
+                            onDeleted={() => {
+                                setSelectedId(null);
+                                loadData(reportType);
+                            }}
+                        />
                     ) : (
-                        <BreakdownReportDetail breakdown={selectedRecord} />
+                        <BreakdownReportDetail
+                            breakdown={selectedRecord}
+                            onDeleted={() => {
+                                setSelectedId(null);
+                                loadData(reportType);
+                            }}
+                        />
                     )}
                 </div>
 

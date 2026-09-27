@@ -58,7 +58,7 @@ function Clients() {
 
     return (
         <>
-            <Topbar title="Clients" />
+            <Topbar title="Customers" />
 
             <div className="clients-layout">
 

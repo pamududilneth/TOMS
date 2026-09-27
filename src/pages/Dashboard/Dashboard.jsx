@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./Dashboard.css";
 
-import Navbar from "../../components/Navbar/Navbar";
+import Topbar from "../../components/Topbar/Topbar"; // 👈 Use Topbar here
 import StatCard from "../../components/StatCard/StatCard";
 import DashboardCard from "../../components/DashboardCard/DashboardCard";
 import ActivityFeed from "../../components/ActivityFeed/ActivityFeed";
@@ -54,7 +54,7 @@ function Dashboard() {
 
     return (
         <>
-            <Navbar />
+            <Topbar title="Operations Dashboard" /> {/* 👈 Render Topbar instead of Navbar */}
 
             <div className="dashboard-content">
 

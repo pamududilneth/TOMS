@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./Topbar.css";
 import { FiBell, FiRotateCcw, FiHelpCircle, FiLogOut, FiUser, FiCamera } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 function Topbar({ title = "Operations Dashboard" }) {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [showProfile, setShowProfile] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
@@ -16,7 +17,13 @@ function Topbar({ title = "Operations Dashboard" }) {
     const notifRef = useRef(null);
     const fileInputRef = useRef(null);
 
-    // 1. Load the user's custom avatar from local storage when they log in
+    // Automatically close all dropdowns whenever the URL changes (page navigation)
+    useEffect(() => {
+        setShowProfile(false);
+        setShowNotifications(false);
+    }, [location.pathname]);
+
+    // Load the user's custom avatar from local storage
     useEffect(() => {
         if (user?.username) {
             const savedAvatar = localStorage.getItem(`avatar_${user.username}`);
@@ -26,7 +33,7 @@ function Topbar({ title = "Operations Dashboard" }) {
         }
     }, [user]);
 
-    // Close dropdowns automatically when clicking anywhere else on the screen
+    // Safe click-outside listener
     useEffect(() => {
         function handleClickOutside(event) {
             if (profileRef.current && !profileRef.current.contains(event.target)) {
@@ -53,7 +60,6 @@ function Topbar({ title = "Operations Dashboard" }) {
         alert("TOMS Help Center is currently under construction. Please contact your administrator for support.");
     }
 
-    // 2. Handle the user selecting a new profile picture from their computer
     function handleFileSelect(e) {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -61,19 +67,15 @@ function Topbar({ title = "Operations Dashboard" }) {
         const reader = new FileReader();
         reader.onload = () => {
             const base64String = reader.result;
-            setCustomAvatar(base64String); // Update the UI immediately
-
-            // Save it securely to local storage tied to this specific user
+            setCustomAvatar(base64String);
             if (user?.username) {
                 localStorage.setItem(`avatar_${user.username}`, base64String);
             }
-
-            setShowProfile(false); // Close the menu
+            setShowProfile(false);
         };
-        reader.readAsDataURL(file); // Convert image to a string we can save
+        reader.readAsDataURL(file);
     }
 
-    // 3. Fallback to a CONSISTENT default avatar based on username
     const defaultAvatar = `https://i.pravatar.cc/150?u=${user?.username || "admin"}`;
     const avatarSrc = customAvatar || defaultAvatar;
 
@@ -90,7 +92,7 @@ function Topbar({ title = "Operations Dashboard" }) {
                     <FiBell
                         className="topbar-icon"
                         onClick={() => {
-                            setShowNotifications(!showNotifications);
+                            setShowNotifications((prev) => !prev);
                             setShowProfile(false);
                         }}
                     />
@@ -115,7 +117,7 @@ function Topbar({ title = "Operations Dashboard" }) {
                         className="topbar-avatar"
                         style={{ objectFit: "cover", backgroundColor: "#fff" }}
                         onClick={() => {
-                            setShowProfile(!showProfile);
+                            setShowProfile((prev) => !prev);
                             setShowNotifications(false);
                         }}
                     />
@@ -127,7 +129,6 @@ function Topbar({ title = "Operations Dashboard" }) {
                             </div>
                             <div className="dropdown-divider"></div>
 
-                            {/* Hidden file input for uploading a new picture */}
                             <button className="dropdown-item" onClick={() => fileInputRef.current?.click()}>
                                 <FiCamera /> Change Picture
                             </button>

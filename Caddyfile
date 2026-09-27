@@ -1,0 +1,11 @@
+34.14.201.225.nip.io {
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}

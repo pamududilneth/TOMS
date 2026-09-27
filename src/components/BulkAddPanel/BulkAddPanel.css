@@ -1,0 +1,115 @@
+.bulk-add-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text-primary);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.bulk-add-trigger:hover {
+    border-color: var(--accent-teal);
+    color: var(--accent-teal);
+}
+
+.bulk-add-panel {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--canvas);
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.bulk-add-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.bulk-add-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+}
+
+.bulk-add-textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    resize: vertical;
+    outline: none;
+}
+
+.bulk-add-textarea:focus {
+    border-color: var(--accent-teal);
+    box-shadow: 0 0 0 3px var(--accent-teal-dim);
+}
+
+.bulk-add-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.bulk-add-count {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.bulk-add-submit {
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--text-primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.bulk-add-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.bulk-add-result {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bulk-add-success {
+    font-size: 12.5px;
+    color: var(--accent-teal);
+    font-weight: 500;
+}
+
+.bulk-add-duplicate {
+    font-size: 12px;
+    color: var(--accent-amber);
+}
+
+.bulk-add-error {
+    font-size: 12px;
+    color: var(--icon-red);
+}
