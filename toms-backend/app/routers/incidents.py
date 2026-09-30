@@ -6,10 +6,12 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
-from ..utils.excel_export import append_incident_row, EXCEL_PATH, _to_local, _combined_stopped_datetime
 from ..utils.client_share import share_incident_with_client, remove_incident_from_client_sheet
 from ..utils.google_sheets_client import append_master_incident_row, delete_master_incident_row
 from ..utils.auth import require_admin, get_current_user
+from ..utils.excel_export import append_incident_row, INCIDENTS_FILE_PATH, _to_local, _combined_stopped_datetime
+from ..utils.graph_excel_client import get_file_web_url
+from fastapi.responses import RedirectResponse
 
 router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
@@ -85,13 +87,11 @@ def next_request_id(
 
 @router.get("/export/excel")
 def export_excel(current_user: models.User = Depends(get_current_user)):
-    if not os.path.exists(EXCEL_PATH):
-        raise HTTPException(status_code=404, detail="No incidents recorded yet")
-    return FileResponse(
-        EXCEL_PATH,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        filename="Unplanned Stop.xlsx",
-    )
+    try:
+        url = get_file_web_url(INCIDENTS_FILE_PATH)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Could not reach SharePoint: {exc}")
+    return RedirectResponse(url)
 
 
 @router.post("/", response_model=schemas.IncidentOut)

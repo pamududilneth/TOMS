@@ -138,25 +138,20 @@ ${table}
 }
 
 // ── Single incident, horizontal table (one header row, one data row) ──
+// ── Single incident, vertical field/value table (matches breakdown style) ──
 export function buildSingleIncidentTableHTML(incident, { standalone = false } = {}) {
-    const colGroup = buildColGroup(DETAIL_FIELDS);
-
-    const headerRow = DETAIL_FIELDS
-        .map((f) => `<th style="${HEADER_CELL_STYLE}">${escapeHtml(f.label)}</th>`)
-        .join("");
-
-    const valueRow = DETAIL_FIELDS
-        .map((f) => `<td style="${CELL_STYLE}">${formatCell(incident, f.key)}</td>`)
-        .join("");
+    const rows = DETAIL_FIELDS.map(({ key, label }) => {
+        const value = formatCell(incident, key);
+        return `
+    <tr>
+      <td style="padding:9px 14px;border:1px solid #e4e8f0;background:#f4f6fb;font-weight:600;width:220px;vertical-align:top;">${escapeHtml(label)}</td>
+      <td style="padding:9px 14px;border:1px solid #e4e8f0;">${value}</td>
+    </tr>`;
+    }).join("");
 
     const table = `
-<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;table-layout:fixed;">
-  ${colGroup}
-  <thead>
-    <tr>${headerRow}</tr>
-  </thead>
-  <tbody>
-    <tr style="background:#ffffff;">${valueRow}</tr>
+<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:13px;min-width:520px;">
+  <tbody>${rows}
   </tbody>
 </table>`.trim();
 

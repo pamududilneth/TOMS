@@ -1,34 +1,20 @@
 import os
 from datetime import datetime, timezone, timedelta
-from openpyxl import Workbook, load_workbook
+from .graph_excel_client import append_row as graph_append_row
 
-EXCEL_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
-EXCEL_PATH = os.path.join(EXCEL_DIR, "Unplanned Stop.xlsx")
+INCIDENTS_FILE_PATH = os.getenv("SHAREPOINT_INCIDENTS_FILE_PATH", "/Shared Documents/Unplanned Stop.xlsx")
+INCIDENTS_TABLE_NAME = "IncidentsTable"
 
 HEADERS = [
-    "Key",
-    "User",
-    "Reported Date/Time by the Call Centre",
-    "Customer",
-    "Vehicle Stop Category",
-    "Job No",
-    "Vehicle No",
-    "Driver Name",
-    "Driver Contact No",
-    "Vehicle Assigned by (Coordinator Name)",
-    "Coordinator Mobile No",
-    "Driver Contacted by OKI DOKI",
-    "Driver Feedback - If Contacted",
-    "Vehicle Parking with Goods",
-    "Vehicle Stopped Location",
-    "Vehicle Stopped Date & Time",
-    "Pickup Location",
-    "Via Location/s",
-    "Delivery Location",
-    "Duration",
+    "Key", "User", "Reported Date/Time by the Call Centre", "Customer",
+    "Vehicle Stop Category", "Job No", "Vehicle No", "Driver Name",
+    "Driver Contact No", "Vehicle Assigned by (Coordinator Name)",
+    "Coordinator Mobile No", "Driver Contacted by OKI DOKI",
+    "Driver Feedback - If Contacted", "Vehicle Parking with Goods",
+    "Vehicle Stopped Location", "Vehicle Stopped Date & Time",
+    "Pickup Location", "Via Location/s", "Delivery Location", "Duration",
 ]
 
-# Sri Lanka is UTC+5:30 — adjust if your team is in a different timezone
 LOCAL_TZ_OFFSET = timedelta(hours=5, minutes=30)
 
 
@@ -38,16 +24,6 @@ def _to_local(dt):
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
     return dt.astimezone(timezone(LOCAL_TZ_OFFSET))
-
-
-def _ensure_workbook():
-    os.makedirs(EXCEL_DIR, exist_ok=True)
-    if not os.path.exists(EXCEL_PATH):
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Incidents"
-        ws.append(HEADERS)
-        wb.save(EXCEL_PATH)
 
 
 def _combined_stopped_datetime(date_str, time_str):
@@ -61,41 +37,17 @@ def _combined_stopped_datetime(date_str, time_str):
 
 
 def append_incident_row(incident, username: str, customer_name: str = "", duration: str = ""):
-    _ensure_workbook()
+    reported_at = _to_local(incident.created_at)
+    reported_datetime_str = f"{reported_at.strftime('%d-%m-%Y')} {reported_at.strftime('%H:%M:%S')}"
 
-    try:
-        wb = load_workbook(EXCEL_PATH)
-        ws = wb["Incidents"]
+    row_values = [
+        incident.request_id, username, reported_datetime_str, customer_name,
+        incident.stop_category, incident.job_no, incident.vehicle_number,
+        incident.driver_name, incident.driver_contact_number, incident.assigned_coordinator,
+        incident.coordinator_mobile_number, incident.driver_contacted, incident.driver_feedback,
+        "Yes" if incident.vehicle_parked else "No", incident.current_parking_location,
+        _combined_stopped_datetime(incident.stopped_date, incident.stopped_time),
+        incident.pickup_location, incident.via_locations, incident.delivery_location, duration,
+    ]
 
-        reported_at = _to_local(incident.created_at)
-        reported_datetime_str = f"{reported_at.strftime('%d-%m-%Y')} {reported_at.strftime('%H:%M:%S')}"
-
-        ws.append([
-            incident.request_id,
-            username,
-            reported_datetime_str,
-            customer_name,
-            incident.stop_category,
-            incident.job_no,
-            incident.vehicle_number,
-            incident.driver_name,
-            incident.driver_contact_number,
-            incident.assigned_coordinator,
-            incident.coordinator_mobile_number,
-            incident.driver_contacted,
-            incident.driver_feedback,
-            "Yes" if incident.vehicle_parked else "No",
-            incident.current_parking_location,
-            _combined_stopped_datetime(incident.stopped_date, incident.stopped_time),
-            incident.pickup_location,
-            incident.via_locations,
-            incident.delivery_location,
-            duration,
-        ])
-
-        wb.save(EXCEL_PATH)
-
-    except PermissionError as exc:
-        raise RuntimeError(
-            "Could not write to Unplanned Stop.xlsx — close the file in Excel and try again."
-        ) from exc
+    graph_append_row(INCIDENTS_FILE_PATH, INCIDENTS_TABLE_NAME, HEADERS, row_values)
