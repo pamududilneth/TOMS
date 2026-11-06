@@ -6,6 +6,7 @@ import StatCard from "../../components/StatCard/StatCard";
 import DashboardCard from "../../components/DashboardCard/DashboardCard";
 import ActivityFeed from "../../components/ActivityFeed/ActivityFeed";
 import { api } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 import {
     FaExclamationTriangle,
@@ -16,6 +17,7 @@ import {
 const POLL_INTERVAL_MS = 8000;
 
 function Dashboard() {
+    const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const [activity, setActivity] = useState([]);
     const [lastUpdated, setLastUpdated] = useState(null);
@@ -72,7 +74,7 @@ function Dashboard() {
                     )}
                 </div>
 
-                <h1>Welcome back, Admin</h1>
+                <h1>Welcome back, {user?.full_name || user?.username}</h1>
 
                 <p>Monitoring live incidents and breakdowns across the network.</p>
 

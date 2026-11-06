@@ -27,6 +27,7 @@ const VEHICLE_TYPE_OPTIONS = [
     "7.5' - FLAT PACK", "8.5' - FLAT PACK", "CAR", "MOTOR BIKE", "THREE WHEEL", "VAN",
 ];
 
+//job number validation cheacking 
 function validateJobNo(value) {
     if (!value) return null;
     const prefix = value.slice(0, 3);

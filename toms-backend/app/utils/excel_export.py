@@ -50,4 +50,10 @@ def append_incident_row(incident, username: str, customer_name: str = "", durati
         incident.pickup_location, incident.via_locations, incident.delivery_location, duration,
     ]
 
-    graph_append_row(INCIDENTS_FILE_PATH, INCIDENTS_TABLE_NAME, HEADERS, row_values)
+    graph_append_row(
+        INCIDENTS_FILE_PATH, 
+        INCIDENTS_TABLE_NAME, 
+        HEADERS, 
+        row_values,
+        date_column_indices=[2, 15]  # "Reported Date/Time...", "Vehicle Stopped Date & Time"
+    )

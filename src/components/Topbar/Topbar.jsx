@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./Topbar.css";
 import { FiBell, FiRotateCcw, FiHelpCircle, FiLogOut, FiUser, FiCamera } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
+import "../../lib/liquidGlass"; // liquid glass
 
 function Topbar({ title = "Operations Dashboard" }) {
     const { user, logout } = useAuth();
@@ -16,6 +17,22 @@ function Topbar({ title = "Operations Dashboard" }) {
     const profileRef = useRef(null);
     const notifRef = useRef(null);
     const fileInputRef = useRef(null);
+    const topbarRef = useRef(null);
+
+    useEffect(() => {
+        if (!topbarRef.current || !window.attachLiquidGlass) return;
+
+        const glass = window.attachLiquidGlass(topbarRef.current, {
+            maxMapSize: 300,
+            blur: 0.25,
+            contrast: 1.1,
+            brightness: 1.05,
+            saturate: 1.1,
+            fallbackBlur: 20,
+        });
+
+        return () => glass.destroy();
+    }, []);
 
     // Automatically close all dropdowns whenever the URL changes (page navigation)
     useEffect(() => {
@@ -80,7 +97,7 @@ function Topbar({ title = "Operations Dashboard" }) {
     const avatarSrc = customAvatar || defaultAvatar;
 
     return (
-        <div className="topbar">
+        <div className="topbar" ref={topbarRef}>
             <div className="topbar-left">
                 <span className="topbar-title">{title}</span>
             </div>

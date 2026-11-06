@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
 from ..utils.client_share import share_incident_with_client, remove_incident_from_client_sheet
-from ..utils.google_sheets_client import append_master_incident_row, delete_master_incident_row
+# from ..utils.google_sheets_client import append_master_incident_row, delete_master_incident_row
 from ..utils.auth import require_admin, get_current_user
 from ..utils.excel_export import append_incident_row, INCIDENTS_FILE_PATH, _to_local, _combined_stopped_datetime
 from ..utils.graph_excel_client import get_file_web_url
@@ -162,10 +162,10 @@ def create_incident(
         incident.duration,
     ]
 
-    try:
-        append_master_incident_row(row_data)
-    except Exception as exc:
-        print(f"[create_incident] Google Sheets sync failed: {exc}")
+    # try:
+    #     append_master_incident_row(row_data)
+    # except Exception as exc:
+    #     print(f"[create_incident] Google Sheets sync failed: {exc}")
 
     if client_ids:
         clients = db.query(models.Client).filter(models.Client.id.in_(client_ids)).all()
@@ -229,10 +229,10 @@ def delete_incident(
     db.delete(incident)
     db.commit()
 
-    try:
-        delete_master_incident_row(request_id)
-    except Exception as exc:
-        print(f"[delete_incident] Master sheet sync failed: {exc}")
+    # try:
+    #     delete_master_incident_row(request_id)
+    # except Exception as exc:
+    #     print(f"[delete_incident] Master sheet sync failed: {exc}")
 
     for client in shared_clients:
         try:

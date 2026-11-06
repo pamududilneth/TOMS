@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
 from ..utils.breakdown_excel_export import append_breakdown_row as append_breakdown_row_local
-from ..utils.google_sheets_client import append_breakdown_row as append_breakdown_row_sheets, delete_breakdown_row
+# from ..utils.google_sheets_client import append_breakdown_row as append_breakdown_row_sheets, delete_breakdown_row
 from ..utils.auth import require_admin, get_current_user
 
 router = APIRouter(prefix="/api/breakdowns", tags=["breakdowns"])
@@ -148,10 +148,10 @@ def create_breakdown(
         "", "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
     ]
-    try:
-        append_breakdown_row_sheets(row_data)
-    except Exception as exc:
-        print(f"[create_breakdown] Google Sheets sync failed: {exc}")
+    # try:
+    #     append_breakdown_row_sheets(row_data)
+    # except Exception as exc:
+    #     print(f"[create_breakdown] Google Sheets sync failed: {exc}")
 
     return _attach_display_fields(breakdown, db)
 
@@ -201,9 +201,9 @@ def delete_breakdown(
     db.delete(breakdown)
     db.commit()
 
-    try:
-        delete_breakdown_row(job_number)
-    except Exception as exc:
-        print(f"[delete_breakdown] Sheet sync failed: {exc}")
+    # try:
+    #     delete_breakdown_row(job_number)
+    # except Exception as exc:
+    #     print(f"[delete_breakdown] Sheet sync failed: {exc}")
 
     return {"deleted": True}

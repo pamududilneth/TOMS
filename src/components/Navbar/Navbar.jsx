@@ -1,57 +1,57 @@
-import "./Navbar.css";
-import {
-    FaBell,
-    FaSyncAlt,
-    FaCog,
-    FaSearch
-} from "react-icons/fa";
+// import "./Navbar.css";
+// import {
+//     FaBell,
+//     FaSyncAlt,
+//     FaCog,
+//     FaSearch
+// } from "react-icons/fa";
 
-function Navbar() {
+// function Navbar() {
 
-    return (
+//     return (
 
-        <div className="navbar">
+//         <div className="navbar">
 
-            <div className="navbar-left">
+//             <div className="navbar-left">
 
-                <div className="search-box">
+//                 <div className="search-box">
 
-                    <FaSearch />
+//                     <FaSearch />
 
-                    <input
-                        type="text"
-                        placeholder="Search operations..."
-                    />
+//                     <input
+//                         type="text"
+//                         placeholder="Search operations..."
+//                     />
 
-                </div>
+//                 </div>
 
-                <div className="status-pill">
-                    <span className="pulse-dot" />
-                    System Operational
-                </div>
+//                 <div className="status-pill">
+//                     <span className="pulse-dot" />
+//                     System Operational
+//                 </div>
 
-            </div>
+//             </div>
 
-            <div className="navbar-right">
+//             <div className="navbar-right">
 
-                <FaBell className="nav-icon" />
+//                 <FaBell className="nav-icon" />
 
-                <FaSyncAlt className="nav-icon" />
+//                 <FaSyncAlt className="nav-icon" />
 
-                <FaCog className="nav-icon" />
+//                 <FaCog className="nav-icon" />
 
-                <img
-                    src="https://i.pravatar.cc/40"
-                    alt="profile"
-                    className="profile"
-                />
+//                 <img
+//                     src="https://i.pravatar.cc/40"
+//                     alt="profile"
+//                     className="profile"
+//                 />
 
-            </div>
+//             </div>
 
-        </div>
+//         </div>
 
-    );
+//     );
 
-}
+// }
 
-export default Navbar;
+// export default Navbar;

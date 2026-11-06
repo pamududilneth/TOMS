@@ -62,82 +62,6 @@ def append_incident_row(sheet_title: str, row_values: list):
     ws = sh.sheet1
     ws.append_row(row_values, value_input_option="USER_ENTERED")
 
-
-# ==========================================
-# 2. MASTER SHEETS (New Code)
-# ==========================================
-
-# ---> UPDATED: 45-column Breakdown Headers
-BREAKDOWN_HEADERS = [
-    "Record ID", "Data Entered by", "Incident Date/Time", "Incident Month",
-    "Reported Date/Time to the Compliance Team", "Reported Month", "Time for Reporting",
-    "Job No", "Incident Reference No by Compliance Team", "Customer", "Vehicle No", "Vehicle Type",
-    "Driver", "Supplier", "Category", "Category Detail", "Injury Category", "Route Cause",
-    "Shipment Content (Goods)", "Third Party Life", "Driver/Assistant Life", "Vehicle",
-    "Third Party Property", "Delivery on Time", "Combined Result", "Severity Level",
-    "Severity Classification", "Involvement of Police", "Legal Impact", "Customer Claim",
-    "Other Cost", "Financial Impact", "Action", "Action Taken Date", "Remark", "Status",
-    "Action Closing Date", "Time for Action Closing", "Applicability of Correction",
-    "Correction", "Applicability of Corrective Action", "Corrective Action",
-    "Responsible Person for Corrective Action", "Target Date for Corrective Action",
-    "Target Month for Corrective Action", "Status for Corrective Action",
-]
-
-STOP_MANAGEMENT_HEADERS = [
-    "ID", "Vehicle Number", "Driver Name", "Stop Reason", "Duration", "Location", "Reported At"
-]
-
-def get_or_create_master_sheet(sheet_title: str, headers: list):
-    """Finds the master sheet, or creates it with bold headers if it doesn't exist."""
-    gc = _get_client()
-    try:
-        sh = gc.open(sheet_title)
-    except gspread.SpreadsheetNotFound:
-        sh = gc.create(sheet_title)
-        ws = sh.sheet1
-        ws.update("A1", [headers])
-
-        # Automatically determine the end column letter based on length of headers
-        # Note: chr(64 + len) only works up to 26 (column Z).
-        # We handle up to 45 columns here with a simple A-Z, AA-AZ builder.
-        col_count = len(headers)
-        if col_count <= 26:
-            end_col_letter = chr(64 + col_count)
-        else:
-            first_letter = chr(64 + (col_count // 26))
-            second_letter = chr(64 + (col_count % 26))
-            if second_letter == '@': # Handle exact multiples of 26
-                first_letter = chr(64 + (col_count // 26) - 1)
-                second_letter = 'Z'
-            end_col_letter = f"{first_letter}{second_letter}"
-
-        ws.format(f"A1:{end_col_letter}1", {"textFormat": {"bold": True}})
-
-    return sh
-
-def append_breakdown_row(row_values: list):
-    """Appends a new breakdown to the master Google Sheet."""
-    sheet_name = "Breakdowns_Accident"
-    sh = get_or_create_master_sheet(sheet_name, BREAKDOWN_HEADERS)
-    ws = sh.sheet1
-    ws.append_row(row_values, value_input_option="USER_ENTERED")
-
-def append_stop_management_row(row_values: list):
-    """Appends a new stop record to the master Google Sheet."""
-    sheet_name = "TOMS - Stop Management Master"
-    sh = get_or_create_master_sheet(sheet_name, STOP_MANAGEMENT_HEADERS)
-    ws = sh.sheet1
-    ws.append_row(row_values, value_input_option="USER_ENTERED")
-
-
-def append_master_incident_row(row_values: list):
-    """Appends a new incident to the centralized Master Google Sheet."""
-    sheet_name = "Unplanned Stop"
-    sh = get_or_create_master_sheet(sheet_name, INCIDENT_HEADERS)
-    ws = sh.sheet1
-    ws.append_row(row_values, value_input_option="USER_ENTERED")
-
-
 def delete_row_by_value(sheet_title: str, match_value: str, column: int = 1) -> bool:
     """
     Finds a cell in the given column matching match_value exactly, and
@@ -164,17 +88,6 @@ def delete_row_by_value(sheet_title: str, match_value: str, column: int = 1) -> 
 
     ws.delete_rows(cell.row)
     return True
-
-
-def delete_master_incident_row(request_id: str) -> bool:
-    """Deletes the matching row from the centralized Incidents Master sheet."""
-    return delete_row_by_value("TOMS - Incidents Master", request_id, column=1)
-
-
-def delete_breakdown_row(job_number: str) -> bool:
-    """Deletes the matching row from the Vehicle Breakdowns Master sheet."""
-    return delete_row_by_value("TOMS - Vehicle Breakdowns Master", job_number, column=1)
-
 
 def set_row_height(sheet_title: str, row_number: int, height_px: int = 230):
     gc = _get_client()

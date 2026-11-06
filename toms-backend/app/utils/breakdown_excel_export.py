@@ -41,4 +41,7 @@ def append_breakdown_row(
         "", "", "", "", "", "", "", "",
     ]
 
-    graph_append_row(BREAKDOWNS_FILE_PATH, BREAKDOWNS_TABLE_NAME, HEADERS, row_values)
+    graph_append_row(
+        BREAKDOWNS_FILE_PATH, BREAKDOWNS_TABLE_NAME, HEADERS, row_values,
+        date_column_indices=[2, 4],  # "Incident Date/Time", "Reported Date/Time to the Compliance Team"
+    )

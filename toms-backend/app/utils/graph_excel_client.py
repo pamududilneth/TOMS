@@ -2,6 +2,7 @@ import os
 import time
 import requests
 import msal
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -200,12 +201,20 @@ def _ensure_table(file_path: str, table_name: str, headers: list[str]) -> str:
     return table_name
 
 
-def append_row(file_path: str, table_name: str, headers: list[str], row_values: list):
+def append_row(file_path: str, table_name: str, headers: list[str], row_values: list, date_column_indices: list[int] | None = None):
     try:
         _ensure_table(file_path, table_name, headers)
         url = _workbook_url(file_path, f"/tables/{table_name}/rows/add")
         res = requests.post(url, headers=_headers(), json={"values": [row_values]})
         res.raise_for_status()
+
+        if date_column_indices:
+            row_index = res.json().get("index")
+            if row_index is not None:
+                try:
+                    _format_date_columns(file_path, table_name, row_index, date_column_indices)
+                except Exception as exc:
+                    print(f"[append_row] Date formatting failed (non-fatal): {exc}")
     except requests.HTTPError as exc:
         raise RuntimeError(f"SharePoint Excel write failed ({file_path}): {exc.response.text}") from exc
     except RuntimeError:
@@ -220,3 +229,21 @@ def get_file_web_url(file_path: str) -> str:
     res = requests.get(url, headers=_headers())
     res.raise_for_status()
     return res.json()["webUrl"]
+
+
+def _format_date_columns(file_path: str, table_name: str, row_index: int, date_column_indices: list[int], number_format: str = "dd-mm-yyyy hh:mm:ss"):
+    sheet_name = _get_first_worksheet_name(file_path)
+
+    range_url = _workbook_url(file_path, f"/tables/{table_name}/rows/itemAt(index={row_index})/range()")
+    res = requests.get(range_url, headers=_headers())
+    res.raise_for_status()
+    address = res.json()["address"]  # e.g. "Sheet1!A8:T8"
+
+    abs_row = re.search(r"(\d+)", address.split("!")[1]).group(1)
+
+    for col_index in date_column_indices:
+        col_letter = _column_letter(col_index + 1)
+        cell_url = _workbook_url(
+            file_path, f"/worksheets('{sheet_name}')/range(address='{col_letter}{abs_row}')"
+        )
+        requests.patch(cell_url, headers=_headers(), json={"numberFormat": [[number_format]]})

@@ -1,7 +1,7 @@
+/* 
 .navbar {
     height: 76px;
-    /* background: var(--panel); */
-    /* background: white; */
+    
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(20px);
@@ -13,9 +13,9 @@
     position: sticky;
     top: 0;
     z-index: 5;
-}
+} */
 
-.navbar-left {
+/* .navbar-left {
     display: flex;
     align-items: center;
     gap: 18px;
@@ -94,4 +94,4 @@
     border-radius: 50%;
     border: 2px solid var(--border-strong);
     cursor: pointer;
-}
+} */
