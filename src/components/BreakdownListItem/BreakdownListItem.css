@@ -43,16 +43,6 @@
     text-transform: uppercase;
 }
 
-/* .type-breakdown {
-    background: var(--icon-amber-bg, rgba(217, 119, 6, 0.12));
-    color: var(--accent-amber);
-} */
-
-/* .type-accident {
-    background: var(--icon-red-bg);
-    color: var(--icon-red);
-} */
-
 .breakdown-list-item-vehicle {
     font-size: 13px;
     font-weight: 500;
